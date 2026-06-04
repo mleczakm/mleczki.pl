@@ -1,0 +1,93 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Cloudflare DNS records
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          DOMAIN: mleczki.pl
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ZONE_ID" ]; then
+            echo "Warning: Cloudflare credentials not set. Skipping DNS verification."
+            exit 0
+          fi
+
+          echo "Fetching DNS records for $DOMAIN..."
+          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records?name=$DOMAIN&type=A" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json")
+
+          echo "Cloudflare API response: $RESPONSE"
+
+          # Check if we got any records
+          RECORD_COUNT=$(echo "$RESPONSE" | jq '.result | length')
+          if [ "$RECORD_COUNT" -eq 0 ]; then
+            echo "Error: No A records found for $DOMAIN in Cloudflare"
+            echo "Please add the following A records:"
+            echo "  - 185.199.108.153"
+            echo "  - 185.199.109.153"
+            echo "  - 185.199.110.153"
+            echo "  - 185.199.111.153"
+            exit 1
+          fi
+
+          # GitHub Pages IPs
+          GITHUB_PAGES_IPS=("185.199.108.153" "185.199.109.153" "185.199.110.153" "185.199.111.153")
+
+          # Verify each record points to a GitHub Pages IP
+          echo "$RESPONSE" | jq -c '.result[]' | while read -r record; do
+            IP=$(echo "$record" | jq -r '.content')
+            echo "Checking A record: $IP"
+            
+            FOUND=false
+            for github_ip in "${GITHUB_PAGES_IPS[@]}"; do
+              if [ "$IP" = "$github_ip" ]; then
+                FOUND=true
+                echo "✓ Record $IP matches GitHub Pages IP"
+                break
+              fi
+            done
+            
+            if [ "$FOUND" = false ]; then
+              echo "✗ Record $IP does not match any GitHub Pages IP"
+              echo "Expected one of: ${GITHUB_PAGES_IPS[*]}"
+              exit 1
+            fi
+          done
+
+          echo "✓ All DNS records verified successfully"
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

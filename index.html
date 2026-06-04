@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Michał Mleczko - Developer | Cyclist | Activist</title>
+    <meta name="description" content="Personal portfolio of Michał Mleczko. Developer, cargo bike enthusiast, and community activist in Radzymin.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        // Kolor dopasowany do cargo.mleczki.pl z dostarczonego zrzutu ekranu
+                        cargoGreen: '#0d5336', 
+                        devDark: '#0f172a',
+                        activistAmber: '#d97706'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        /* Kontener główny */
+        #app-container {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column; /* Mobile first */
+        }
+
+        /* Wspólne style paneli */
+        .panel {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            transition: flex 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Stan aktywny (po najechaniu/kliknięciu) */
+        .panel.active {
+            flex: 3;
+        }
+
+        /* Ukrywanie/Pokazywanie treści wewnątrz paneli */
+        .panel-details {
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease, max-height 0.5s ease;
+        }
+
+        .panel.active .panel-details {
+            opacity: 1;
+            max-height: 500px;
+            transform: translateY(0);
+            transition-delay: 0.2s; /* Opóźnienie, aby najpierw panel się rozszerzył */
+        }
+
+        .panel-title {
+            transition: transform 0.5s ease;
+        }
+        
+        .panel.active .panel-title {
+            transform: scale(1.1) translateY(-10px);
+        }
+
+        /* --- Wersja Desktop (Ukośne pasy) --- */
+        @media (min-width: 768px) {
+            #app-container {
+                /* Rozszerzamy kontener, aby ukryć poszarpane krawędzie po pochyleniu */
+                width: 120%;
+                margin-left: -10%;
+                flex-direction: row;
+                transform: skewX(-12deg);
+            }
+
+            .panel-content {
+                /* Odwracamy pochylenie dla zawartości, aby tekst był prosty */
+                transform: skewX(12deg);
+                width: 80%;
+                max-width: 600px;
+                padding: 2rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            
+            /* Zapobieganie zacinaniu się hover'a przy szybkich ruchach */
+            .panel::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                z-index: 10;
+            }
+            .panel-content {
+                position: relative;
+                z-index: 20;
+            }
+            
+            /* Krawędzie rozdzielające w desktopie */
+            .panel:not(:last-child) {
+                border-right: 4px solid rgba(0,0,0,0.3);
+            }
+        }
+
+        /* --- Wersja Mobile (Pionowy akordeon) --- */
+        @media (max-width: 767px) {
+            .panel-content {
+                padding: 1.5rem;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .panel.active {
+                flex: 4; /* Na mobile dajemy więcej miejsca aktywnemu elementowi */
+            }
+            .panel-details {
+                max-height: 0;
+            }
+            .panel.active .panel-details {
+                max-height: 60vh;
+                overflow-y: auto; /* Przewijanie wewnątrz panelu, jeśli treść jest długa */
+            }
+            /* Krawędzie rozdzielające w mobile */
+            .panel:not(:last-child) {
+                border-bottom: 4px solid rgba(0,0,0,0.3);
+            }
+        }
+
+        /* Stylizacja przycisków i linków wewnątrz paneli */
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin-top: 1rem;
+        }
+        
+        /* Glassmorphism dla przełącznika języka */
+        .lang-switcher {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="text-white antialiased">
+
+    <div class="fixed top-4 right-4 z-50 flex gap-2 lang-switcher px-4 py-2 rounded-full shadow-lg">
+        <button onclick="setLang('pl')" id="btn-pl" class="font-bold text-white hover:text-gray-300 transition-colors">PL</button>
+        <span class="text-gray-400">|</span>
+        <button onclick="setLang('en')" id="btn-en" class="text-gray-400 hover:text-white transition-colors">EN</button>
+    </div>
+
+    <div id="app-container">
+        
+        <!-- PANEL 1: DEWELOPER -->
+        <div class="panel bg-devDark group" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+            <div class="panel-content">
+                <!-- SVG Ikona Dewelopera -->
+                <div class="mb-4 text-blue-400 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="16 18 22 12 16 6"></polyline>
+                        <polyline points="8 6 2 12 8 18"></polyline>
+                    </svg>
+                </div>
+                
+                <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="dev_title">Deweloper</h2>
+                <p class="text-blue-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="dev_subtitle">Tworzę oprogramowanie, jakiego potrzebuje biznes.</p>
+                
+                <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
+                    <p class="text-gray-300 text-sm md:text-base mb-6 max-w-md" data-i18n="dev_desc">
+                        Tworzę nowoczesne aplikacje od projektu aż po wdrożenie. Skupiam się na dostarczaniu realnej wartości, czystym kodzie i wydajnych rozwiązaniach.
+                    </p>
+                    
+                    <div class="w-full max-w-sm flex flex-col gap-3">
+                        <a href="https://github.com/mleczakm/class-cash" target="_blank" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg p-3 transition-colors">
+                            <div class="font-bold text-white flex items-center justify-between">
+                                <span>Class-Cash</span>
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1" data-i18n="dev_classcash">Zarządzanie finansami klasowymi.</div>
+                        </a>
+                        
+                        <a href="https://github.com/mleczakm/kiddo" target="_blank" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg p-3 transition-colors">
+                            <div class="font-bold text-white flex items-center justify-between">
+                                <span>Kiddo</span>
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1" data-i18n="dev_kiddo">Aplikacja wspierająca rejestrację na zajęcia dla dzieci.</div>
+                        </a>
+                    </div>
+                    
+                    <a href="https://github.com/mleczakm" target="_blank" class="action-link bg-blue-600 hover:bg-blue-500 text-white mt-6">
+                        <span data-i18n="dev_github">Mój profil GitHub</span> &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: ROWERZYSTA -->
+        <div class="panel bg-cargoGreen group active" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+            <div class="panel-content">
+                <!-- SVG Ikona Rowerzysty z Białym Kaskiem -->
+                <div class="mb-4 text-green-200 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- Stylizowany rower -->
+                        <circle cx="5.5" cy="17.5" r="3.5"></circle>
+                        <circle cx="18.5" cy="17.5" r="3.5"></circle>
+                        <path d="M15 6a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm-3 11.5V14l-3-3 4-3 2 3h2"></path>
+                        <path d="M12 17.5l-3-7.5-2.5 2.5"></path>
+                        <!-- Zaakcentowany kask (dodajemy klasę dla białego koloru wypełnienia w CSS, tutaj uproszczone SVG) -->
+                        <path d="M14 6c0-1.5 1-2.5 2-2.5s2 1 2 2.5" fill="#ffffff" stroke="#ffffff"></path>
+                    </svg>
+                </div>
+                
+                <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase text-white" data-i18n="cyc_title">Rowerzysta</h2>
+                <p class="text-green-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="cyc_subtitle">Z wiatrem we włosach (i w białym kasku).</p>
+                
+                <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
+                    <p class="text-green-100 text-sm md:text-base mb-4 max-w-md" data-i18n="cyc_desc">
+                        Pasjonat dwóch kółek. Na co dzień przemierzam miasto rowerem cargo. Promuję aktywny, rodzinny tryb życia i zrównoważony transport.
+                    </p>
+                    
+                    <div class="w-full max-w-sm bg-black/20 p-4 rounded-xl border border-white/10 text-left">
+                        <p class="font-bold mb-2 text-white/90" data-i18n="cyc_offer">Wynajmij sprzęt na rodzinne wyprawy:</p>
+                        <ul class="text-sm text-green-100 space-y-2 list-disc list-inside">
+                            <li data-i18n="cyc_cargo">Rowery Cargo (Longjohn)</li>
+                            <li data-i18n="cyc_tandem">Rowery typu Tandem</li>
+                            <li data-i18n="cyc_trailers">Interesujące przyczepki rowerowe</li>
+                        </ul>
+                    </div>
+
+                    <a href="https://cargo.mleczki.pl" target="_blank" class="action-link bg-green-500 hover:bg-green-400 text-white mt-6 shadow-[0_0_15px_rgba(34,197,94,0.4)]">
+                        <span data-i18n="cyc_link">Odwiedź cargo.mleczki.pl</span> &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 3: SPOŁECZNIK -->
+        <div class="panel bg-activistAmber group" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+            <div class="panel-content">
+                <!-- SVG Ikona Społecznika -->
+                <div class="mb-4 text-orange-200 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                
+                <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="com_title">Społecznik</h2>
+                <p class="text-orange-200 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="com_subtitle">Radzymin i okolice, z myślą o ludziach.</p>
+                
+                <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
+                    <p class="text-white text-sm md:text-base mb-4 max-w-md" data-i18n="com_desc">
+                        Zajmuję się sprawami infrastruktury z perspektywy niechronionych uczestników ruchu. Walczę o bezpieczne przejścia dla pieszych, ciągi rowerowe i sprawny transport publiczny.
+                    </p>
+                    
+                    <div class="w-full max-w-sm bg-orange-800/40 p-4 rounded-xl border border-white/20 mb-4">
+                        <p class="text-sm font-medium text-orange-50 italic" data-i18n="com_assoc">
+                            "Wkrótce planuję powołać stowarzyszenie, aby sformalizować i rozszerzyć nasze działania. Zapraszam do kontaktu każdego, kto chce pomóc!"
+                        </p>
+                    </div>
+
+                    <a class="action-link bg-orange-700 hover:bg-orange-800 text-white border border-orange-500">
+                        <span data-i18n="com_link">Sprawdź już wkrótce radzymin.mleczki.pl</span> &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. Logika Interfejsu (Akordeon) ---
+        
+        // Elementy DOM
+        const panels = document.querySelectorAll('.panel');
+        let isTouchDevice = false;
+        
+        // Wykrywanie urządzeń dotykowych
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            isTouchDevice = true;
+        }
+
+        function activatePanel(selectedPanel) {
+            // Jeżeli korzystamy z urządzenia dotykowego, zapobiegamy przypadkowemu mruganiu
+            // i zamykaniu po kliknięciu. Pozwalamy na otwieranie kliknięciem.
+            panels.forEach(panel => {
+                if (panel !== selectedPanel) {
+                    panel.classList.remove('active');
+                }
+            });
+            selectedPanel.classList.add('active');
+        }
+
+        // Dla urządzeń ze wskaźnikiem myszy, resetujemy do równych szerokości po wyjechaniu poza kontener
+        const appContainer = document.getElementById('app-container');
+        appContainer.addEventListener('mouseleave', () => {
+            if(!isTouchDevice) {
+                // Opcjonalnie: można zostawić ostatnio aktywny, lub zresetować.
+                // Wybieram pozostawienie środkowego jako domyślnego, tak jak na start.
+                panels.forEach(panel => panel.classList.remove('active'));
+                panels[1].classList.add('active'); // Środkowy (Rowerzysta) na zachętę
+            }
+        });
+
+
+        // --- 2. Logika Wielojęzyczności (i18n) ---
+        
+        const translations = {
+            pl: {
+                dev_title: "Deweloper",
+                dev_subtitle: "Tworzę oprogramowanie, jakiego potrzebuje biznes.",
+                dev_desc: "Tworzę nowoczesne aplikacje od zaplecza aż po interfejs. Skupiam się na dostarczaniu realnej wartości, czystym kodzie i wydajnych rozwiązaniach.",
+                dev_classcash: "Aplikacja do zarządzania finansami klasowymi dla skarbników.",
+                dev_kiddo: "Aplikacja wspierająca rejestrację na zajęcia dla dzieci.",
+                dev_github: "Mój profil GitHub",
+
+                cyc_title: "Rowerzysta",
+                cyc_subtitle: "Z wiatrem we włosach (i w białym kasku).",
+                cyc_desc: "Pasjonat dwóch kółek. Na co dzień przemierzam miasto rowerem cargo. Promuję aktywny, rodzinny tryb życia i zrównoważony transport.",
+                cyc_offer: "Wynajmij sprzęt na rodzinne wyprawy:",
+                cyc_cargo: "Rowery Cargo (Longjohn)",
+                cyc_tandem: "Rowery typu Tandem",
+                cyc_trailers: "Niecodzienne przyczepki rowerowe",
+                cyc_link: "Odwiedź cargo.mleczki.pl",
+
+                com_title: "Społecznik",
+                com_subtitle: "Radzymin i okolice, z myślą o ludziach.",
+                com_desc: "Zajmuję się sprawami infrastruktury z perspektywy niechronionych uczestników ruchu. Walczę o bezpieczne przejścia dla pieszych, ciągi rowerowe i sprawny transport publiczny.",
+                com_assoc: "\"Wkrótce planuję powołać stowarzyszenie, aby sformalizować i rozszerzyć nasze działania. Zapraszam każdego, kto chce wesprzeć inicjatywę!\"",
+                com_link: "Sprawdź już wkrótce radzymin.mleczki.pl",
+            },
+            en: {
+                dev_title: "Developer",
+                dev_subtitle: "Software tailored to business needs.",
+                dev_desc: "I build modern applications from backend to frontend. I focus on delivering real value, clean code, and efficient solutions.",
+                dev_classcash: "Class finance management application for treasurers.",
+                dev_kiddo: "Application supporting registration for kids' activities.",
+                dev_github: "My GitHub profile",
+
+                cyc_title: "Cyclist",
+                cyc_subtitle: "Wind in my hair (and a white helmet).",
+                cyc_desc: "Two-wheel enthusiast. I commute daily on a cargo bike. Promoting an active family lifestyle and sustainable transport.",
+                cyc_offer: "Rent gear for family trips:",
+                cyc_cargo: "Cargo Bikes (Longjohn)",
+                cyc_tandem: "Tandem bicycles",
+                cyc_trailers: "Interesting bike trailers",
+                cyc_link: "Visit cargo.mleczki.pl",
+
+                com_title: "Activist",
+                com_subtitle: "Radzymin & surroundings, for the people.",
+                com_desc: "Focusing on infrastructure from the perspective of vulnerable road users. Advocating for safe pedestrian crossings, cycling paths, and efficient public transit.",
+                com_assoc: "\"I plan to establish an association soon to formalize and expand our efforts. I invite anyone willing to help to join the initiative!\"",
+                com_link: "Check radzymin.mleczki.pl",
+            }
+        };
+
+        // Wykrywanie języka przeglądarki
+        function detectLanguage() {
+            const userLang = navigator.language || navigator.userLanguage;
+            if (userLang.toLowerCase().includes('pl')) {
+                return 'pl';
+            }
+            return 'en';
+        }
+
+        // Ustawianie języka
+        function setLang(lang) {
+            const elements = document.querySelectorAll('[data-i18n]');
+            
+            elements.forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            // Aktualizacja UI przełącznika
+            document.getElementById('btn-pl').className = lang === 'pl' ? 'font-bold text-white' : 'text-gray-400 hover:text-white transition-colors cursor-pointer';
+            document.getElementById('btn-en').className = lang === 'en' ? 'font-bold text-white' : 'text-gray-400 hover:text-white transition-colors cursor-pointer';
+            
+            // Ustawienie atrybutu html lang dla dostępności
+            document.documentElement.lang = lang;
+        }
+
+        // Inicjalizacja po załadowaniu
+        window.addEventListener('DOMContentLoaded', () => {
+            const initialLang = detectLanguage();
+            setLang(initialLang);
+        });
+
+    </script>
+</body>
+</html>
