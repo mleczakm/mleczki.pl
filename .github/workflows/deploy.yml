@@ -15,6 +15,32 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  add-dns:
+    name: Dodaj wpisy DNS
+    runs-on: ubuntu-latest
+    strategy:
+      # serialise calls to avoid Cloudflare rate limits
+      max-parallel: 1
+      matrix:
+        ip: ["185.199.108.153", "185.199.109.153", "185.199.110.153", "185.199.111.153"]
+    steps:
+      - name: Check Cloudflare credentials
+        if: ${{ !secrets.CLOUDFLARE_API_TOKEN || !secrets.CLOUDFLARE_ZONE_ID }}
+        run: |
+          echo "Cloudflare credentials not provided; skipping DNS updates for ${{ matrix.ip }}"
+
+      - name: Create A record for ${{ matrix.ip }}
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
+        uses: Bluesboy/create-dns-record@v2.1
+        with:
+          type: "A"
+          name: "mleczki.pl"
+          content: ${{ matrix.ip }}
+          ttl: 1
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+
   deploy:
     environment:
       name: github-pages
@@ -24,61 +50,53 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Verify Cloudflare DNS records
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          DOMAIN: mleczki.pl
-        run: |
-          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ZONE_ID" ]; then
-            echo "Warning: Cloudflare credentials not set. Skipping DNS verification."
-            exit 0
-          fi
+      - name: "CloudFlare DNS: Create or Update record (185.199.108.153)"
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
+        uses: Bluesboy/create-dns-record@v2.1
+        with:
+          type: "A"
+          name: "mleczki.pl"
+          content: "185.199.108.153"
+          ttl: 1
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
-          echo "Fetching DNS records for $DOMAIN..."
-          RESPONSE=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records?name=$DOMAIN&type=A" \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            -H "Content-Type: application/json")
+      - name: "CloudFlare DNS: Create or Update record (185.199.109.153)"
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
+        uses: Bluesboy/create-dns-record@v2.1
+        with:
+          type: "A"
+          name: "mleczki.pl"
+          content: "185.199.109.153"
+          ttl: 1
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
-          echo "Cloudflare API response: $RESPONSE"
+      - name: "CloudFlare DNS: Create or Update record (185.199.110.153)"
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
+        uses: Bluesboy/create-dns-record@v2.1
+        with:
+          type: "A"
+          name: "mleczki.pl"
+          content: "185.199.110.153"
+          ttl: 1
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
-          # Check if we got any records
-          RECORD_COUNT=$(echo "$RESPONSE" | jq '.result | length')
-          if [ "$RECORD_COUNT" -eq 0 ]; then
-            echo "Error: No A records found for $DOMAIN in Cloudflare"
-            echo "Please add the following A records:"
-            echo "  - 185.199.108.153"
-            echo "  - 185.199.109.153"
-            echo "  - 185.199.110.153"
-            echo "  - 185.199.111.153"
-            exit 1
-          fi
-
-          # GitHub Pages IPs
-          GITHUB_PAGES_IPS=("185.199.108.153" "185.199.109.153" "185.199.110.153" "185.199.111.153")
-
-          # Verify each record points to a GitHub Pages IP
-          echo "$RESPONSE" | jq -c '.result[]' | while read -r record; do
-            IP=$(echo "$record" | jq -r '.content')
-            echo "Checking A record: $IP"
-            
-            FOUND=false
-            for github_ip in "${GITHUB_PAGES_IPS[@]}"; do
-              if [ "$IP" = "$github_ip" ]; then
-                FOUND=true
-                echo "✓ Record $IP matches GitHub Pages IP"
-                break
-              fi
-            done
-            
-            if [ "$FOUND" = false ]; then
-              echo "✗ Record $IP does not match any GitHub Pages IP"
-              echo "Expected one of: ${GITHUB_PAGES_IPS[*]}"
-              exit 1
-            fi
-          done
-
-          echo "✓ All DNS records verified successfully"
+      - name: "CloudFlare DNS: Create or Update record (185.199.111.153)"
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
+        uses: Bluesboy/create-dns-record@v2.1
+        with:
+          type: "A"
+          name: "mleczki.pl"
+          content: "185.199.111.153"
+          ttl: 1
+          proxied: false
+          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
