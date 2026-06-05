@@ -16,30 +16,102 @@ concurrency:
 
 jobs:
   add-dns:
+    environment:
+      name: github-pages
     name: Dodaj wpisy DNS
     runs-on: ubuntu-latest
     strategy:
       # serialise calls to avoid Cloudflare rate limits
       max-parallel: 1
       matrix:
-        ip: ["185.199.108.153", "185.199.109.153", "185.199.110.153", "185.199.111.153"]
+        include:
+          - domain: "mleczki.pl"
+            ip: "185.199.108.153"
+          - domain: "mleczki.pl"
+            ip: "185.199.109.153"
+          - domain: "mleczki.pl"
+            ip: "185.199.110.153"
+          - domain: "mleczki.pl"
+            ip: "185.199.111.153"
     steps:
       - name: Check Cloudflare credentials
         if: ${{ !secrets.CLOUDFLARE_API_TOKEN || !secrets.CLOUDFLARE_ZONE_ID }}
         run: |
-          echo "Cloudflare credentials not provided; skipping DNS updates for ${{ matrix.ip }}"
+          echo "Cloudflare credentials not provided; skipping DNS updates for ${{ matrix.domain }}"
 
-      - name: Create A record for ${{ matrix.ip }}
+      - name: "Create A record ${{ matrix.domain }} -> ${{ matrix.ip }}"
         if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
         uses: Bluesboy/create-dns-record@v2.1
         with:
           type: "A"
-          name: "mleczki.pl"
+          name: "${{ matrix.domain }}"
           content: ${{ matrix.ip }}
           ttl: 1
           proxied: false
           token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+
+  cleanup-dns:
+    name: Cleanup unwanted DNS records
+    environment:
+      name: github-pages
+    runs-on: ubuntu-latest
+    needs: add-dns
+    if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
+    steps:
+      - name: Remove unwanted A records for mleczki.pl
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          GITHUB_PAGES_IPS: "185.199.108.153,185.199.109.153,185.199.110.153,185.199.111.153"
+        run: |
+          set -euo pipefail
+          
+          DESIRED_IPS=("185.199.108.153" "185.199.109.153" "185.199.110.153" "185.199.111.153")
+          DOMAINS=("mleczki.pl")
+          
+          for domain in "${DOMAINS[@]}"; do
+            echo "Fetching A records for $domain..."
+            RESPONSE=$(curl -sS -X GET "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records?name=$domain&type=A&per_page=100" \
+              -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+              -H "Content-Type: application/json")
+            
+            success=$(echo "$RESPONSE" | jq -r '.success')
+            if [ "$success" != "true" ]; then
+              echo "Failed to fetch records for $domain: $RESPONSE"
+              continue
+            fi
+            
+            # Check each record and delete if not in desired list
+            echo "$RESPONSE" | jq -c '.result[]' | while read -r record; do
+              rec_id=$(echo "$record" | jq -r '.id')
+              rec_ip=$(echo "$record" | jq -r '.content')
+              
+              # Check if this IP is in the desired list
+              found=false
+              for desired_ip in "${DESIRED_IPS[@]}"; do
+                if [ "$rec_ip" = "$desired_ip" ]; then
+                  found=true
+                  break
+                fi
+              done
+              
+              if [ "$found" = false ]; then
+                echo "Deleting unwanted A record for $domain: $rec_ip (id=$rec_id)"
+                del_resp=$(curl -sS -X DELETE "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/dns_records/$rec_id" \
+                  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+                  -H "Content-Type: application/json")
+                del_success=$(echo "$del_resp" | jq -r '.success')
+                if [ "$del_success" = "true" ]; then
+                  echo "✓ Deleted unwanted record $rec_id"
+                else
+                  echo "✗ Failed to delete record $rec_id: $del_resp"
+                fi
+              fi
+            done
+          done
+          
+          echo "✓ DNS cleanup complete"
 
   deploy:
     environment:
@@ -49,54 +121,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: "CloudFlare DNS: Create or Update record (185.199.108.153)"
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
-        uses: Bluesboy/create-dns-record@v2.1
-        with:
-          type: "A"
-          name: "mleczki.pl"
-          content: "185.199.108.153"
-          ttl: 1
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-
-      - name: "CloudFlare DNS: Create or Update record (185.199.109.153)"
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
-        uses: Bluesboy/create-dns-record@v2.1
-        with:
-          type: "A"
-          name: "mleczki.pl"
-          content: "185.199.109.153"
-          ttl: 1
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-
-      - name: "CloudFlare DNS: Create or Update record (185.199.110.153)"
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
-        uses: Bluesboy/create-dns-record@v2.1
-        with:
-          type: "A"
-          name: "mleczki.pl"
-          content: "185.199.110.153"
-          ttl: 1
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-
-      - name: "CloudFlare DNS: Create or Update record (185.199.111.153)"
-        if: ${{ secrets.CLOUDFLARE_API_TOKEN && secrets.CLOUDFLARE_ZONE_ID }}
-        uses: Bluesboy/create-dns-record@v2.1
-        with:
-          type: "A"
-          name: "mleczki.pl"
-          content: "185.199.111.153"
-          ttl: 1
-          proxied: false
-          token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          zone: ${{ secrets.CLOUDFLARE_ZONE_ID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
