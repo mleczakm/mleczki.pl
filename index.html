@@ -66,6 +66,43 @@
             flex: 3;
         }
 
+        /* Animowana scena: płótno ma rozmiar aktywnego panelu, a panel je tylko odsłania */
+        .panel-scene {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 1;
+            display: block;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+
+        .panel.active .panel-scene {
+            opacity: 1;
+        }
+
+        /* Półprzezroczyste tło pod tekstem, aby pozostał czytelny na tle animacji */
+        .panel-content {
+            position: relative;
+            z-index: 20;
+        }
+
+        .panel-content::before {
+            content: '';
+            position: absolute;
+            inset: -6% -14%;
+            z-index: -1;
+            background: radial-gradient(closest-side, var(--scene-scrim) 40%, transparent);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+
+        .panel.active .panel-content::before {
+            opacity: 1;
+        }
+
         /* Ukrywanie/Pokazywanie treści wewnątrz paneli */
         .panel-details {
             opacity: 0;
@@ -100,6 +137,13 @@
                 transform: skewX(-12deg);
             }
 
+            /* Scena jest prosta i szersza od panelu, aby wypełnić jego ukośne krawędzie */
+            .panel-scene {
+                width: calc(72vw + 22vh);
+                height: 100%;
+                transform: translate(-50%, -50%) skewX(12deg);
+            }
+
             .panel-content {
                 /* Odwracamy pochylenie dla zawartości, aby tekst był prosty */
                 transform: skewX(12deg);
@@ -132,6 +176,13 @@
 
         /* --- Wersja Mobile (Pionowy akordeon) --- */
         @media (max-width: 767px) {
+            .panel-scene {
+                width: 100%;
+                height: calc(100vh * 5 / 7);
+                height: calc(100dvh * 5 / 7);
+                transform: translate(-50%, -50%);
+            }
+
             .panel-content {
                 padding: 1.5rem;
                 width: 100%;
@@ -139,16 +190,51 @@
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
+                transition: padding-bottom 0.5s ease;
+            }
+            /* Ikony nie mieszczą się w wąskich panelach, a aktywny panel ma już animację */
+            .panel-icon {
+                display: none;
             }
             .panel.active {
-                flex: 4; /* Na mobile dajemy więcej miejsca aktywnemu elementowi */
+                flex: 5; /* Na mobile dajemy więcej miejsca aktywnemu elementowi */
+            }
+            /* Dolny pas aktywnego panelu zostaje wolny dla animacji */
+            .panel.active .panel-content {
+                padding-top: 1rem;
+                padding-bottom: 8rem;
+            }
+            .panel-content::before {
+                inset: 0 -14% 7rem;
             }
             .panel-details {
                 max-height: 0;
             }
             .panel.active .panel-details {
-                max-height: 60vh;
+                max-height: calc(100vh * 5 / 7 - 14.5rem);
+                max-height: calc(100dvh * 5 / 7 - 14.5rem);
                 overflow-y: auto; /* Przewijanie wewnątrz panelu, jeśli treść jest długa */
+            }
+            .panel.active .panel-details .action-link {
+                margin-top: 0.75rem;
+            }
+            /* Górny panel zostawia miejsce na przełącznik języka */
+            .panel:first-child .panel-content {
+                padding-top: 2.25rem;
+                padding-bottom: 0;
+            }
+            .panel:first-child.active .panel-content {
+                padding-bottom: 8rem;
+            }
+            .panel:first-child.active .panel-details {
+                max-height: calc(100vh * 5 / 7 - 15.75rem);
+                max-height: calc(100dvh * 5 / 7 - 15.75rem);
+            }
+            body .lang-switcher {
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0.125rem 0.75rem;
+                font-size: 0.875rem;
             }
             /* Krawędzie rozdzielające w mobile */
             .panel:not(:last-child) {
@@ -189,10 +275,11 @@
     <div id="app-container">
         
         <!-- PANEL 1: DEWELOPER -->
-        <div class="panel bg-devDark group" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+        <div class="panel bg-devDark group" style="--scene-scrim: rgba(15, 23, 42, 0.82)" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+            <canvas class="panel-scene" aria-hidden="true"></canvas>
             <div class="panel-content">
                 <!-- SVG Ikona Dewelopera -->
-                <div class="mb-4 text-blue-400 opacity-80 group-hover:opacity-100 transition-opacity">
+                <div class="panel-icon mb-4 text-blue-400 opacity-80 group-hover:opacity-100 transition-opacity">
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="16 18 22 12 16 6"></polyline>
                         <polyline points="8 6 2 12 8 18"></polyline>
@@ -233,10 +320,11 @@
         </div>
 
         <!-- PANEL 2: ROWERZYSTA -->
-        <div class="panel bg-cargoGreen group active" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+        <div class="panel bg-cargoGreen group active" style="--scene-scrim: rgba(7, 56, 36, 0.8)" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+            <canvas class="panel-scene" aria-hidden="true"></canvas>
             <div class="panel-content">
                 <!-- SVG Ikona Rowerzysty z Białym Kaskiem -->
-                <div class="mb-4 text-green-200 opacity-80 group-hover:opacity-100 transition-opacity">
+                <div class="panel-icon mb-4 text-green-200 opacity-80 group-hover:opacity-100 transition-opacity">
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <!-- Stylizowany rower -->
                         <circle cx="5.5" cy="17.5" r="3.5"></circle>
@@ -273,10 +361,11 @@
         </div>
 
         <!-- PANEL 3: SPOŁECZNIK -->
-        <div class="panel bg-activistAmber group" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+        <div class="panel bg-activistAmber group" style="--scene-scrim: rgba(146, 64, 14, 0.82)" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+            <canvas class="panel-scene" aria-hidden="true"></canvas>
             <div class="panel-content">
                 <!-- SVG Ikona Społecznika -->
-                <div class="mb-4 text-orange-200 opacity-80 group-hover:opacity-100 transition-opacity">
+                <div class="panel-icon mb-4 text-orange-200 opacity-80 group-hover:opacity-100 transition-opacity">
                     <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -368,6 +457,27 @@
                 com_desc: "Zajmuję się sprawami infrastruktury z perspektywy niechronionych uczestników ruchu. Walczę o bezpieczne przejścia dla pieszych, ciągi rowerowe i sprawny transport publiczny.",
                 com_assoc: "\"Wkrótce planuję powołać stowarzyszenie, aby sformalizować i rozszerzyć nasze działania. Zapraszam każdego, kto chce wesprzeć inicjatywę!\"",
                 com_link: "Sprawdź radzymin.mleczki.pl",
+
+                scene_caption: "POMYSŁ → DZIAŁAJĄCY SYSTEM",
+                scene_node_data: "Twoje dane",
+                scene_node_agent: "Agent AI",
+                scene_node_tools: "MCP / API",
+                scene_node_result: "Rezultat",
+                scene_s1_in: "Potwierdzanie wpłat",
+                scene_s1_out: "Wpłata potwierdzona",
+                scene_s2_in: "Zapisy na warsztaty",
+                scene_s2_out: "Miejsce zarezerwowane",
+                scene_s3_in: "Nadawanie paczek",
+                scene_s3_out: "Etykieta wydrukowana",
+                scene_s3_metric: "1 klik",
+
+                scene_b_city: "URZĄD",
+                scene_b_hospital: "SZPITAL",
+                scene_b_police: "POLICJA",
+                scene_b_roads: "ZARZĄD DRÓG",
+                scene_b_school: "SZKOŁA",
+                scene_b_county: "STAROSTWO",
+                scene_stamp: "WPŁYNĘŁO",
             },
             en: {
                 dev_title: "Developer",
@@ -391,6 +501,27 @@
                 com_desc: "Focusing on infrastructure from the perspective of vulnerable road users. Advocating for safe pedestrian crossings, cycling paths, and efficient public transit.",
                 com_assoc: "\"I plan to establish an association soon to formalize and expand our efforts. I invite anyone willing to help to join the initiative!\"",
                 com_link: "Check radzymin.mleczki.pl",
+
+                scene_caption: "IDEA → WORKING SYSTEM",
+                scene_node_data: "Your data",
+                scene_node_agent: "AI agent",
+                scene_node_tools: "MCP / API",
+                scene_node_result: "Result",
+                scene_s1_in: "Confirming payments",
+                scene_s1_out: "Payment confirmed",
+                scene_s2_in: "Workshop sign-ups",
+                scene_s2_out: "Spot booked",
+                scene_s3_in: "Shipping parcels",
+                scene_s3_out: "Label printed",
+                scene_s3_metric: "1 click",
+
+                scene_b_city: "CITY HALL",
+                scene_b_hospital: "HOSPITAL",
+                scene_b_police: "POLICE",
+                scene_b_roads: "ROADS DEPT.",
+                scene_b_school: "SCHOOL",
+                scene_b_county: "COUNTY",
+                scene_stamp: "RECEIVED",
             }
         };
 
@@ -429,5 +560,6 @@
         });
 
     </script>
+    <script src="scenes.js"></script>
 </body>
 </html>
