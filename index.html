@@ -3,9 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Michał Mleczko - Developer | Cyclist | Activist</title>
-    <meta name="description" content="Personal portfolio of Michał Mleczko. Developer, cargo bike enthusiast, and community activist in Radzymin.">
-    
+    <title>Michał Mleczko — oprogramowanie i AI, rowery cargo, sprawy Radzymina</title>
+    <meta name="description" content="Zastępuję ręczne procesy oprogramowaniem i agentami AI, wynajmuję rowery cargo na rodzinne wyprawy i pilnuję spraw mieszkańców Radzymina.">
+    <meta name="author" content="Michał Mleczko">
+    <link rel="canonical" href="https://mleczki.pl/">
+
+    <!-- Znak marki -->
+    <meta name="theme-color" content="#0d5336">
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+
+    <!-- Podgląd linku w komunikatorach i mediach społecznościowych -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Michał Mleczko">
+    <meta property="og:url" content="https://mleczki.pl/">
+    <meta property="og:title" content="Michał Mleczko: deweloper, rowerzysta, społecznik">
+    <meta property="og:description" content="Oprogramowanie i agenci AI zamiast ręcznej pracy, rowery cargo na rodzinne wyprawy i sprawy mieszkańców Radzymina.">
+    <meta property="og:image" content="https://mleczki.pl/og-image.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Michał Mleczko: trzy ukośne pasy z animacji strony, czyli schemat systemu, rowerzysta w żółtej kurtce na czarnym rowerze cargo i drukarka wysyłająca pisma do urzędów.">
+    <meta property="og:locale" content="pl_PL">
+    <meta property="og:locale:alternate" content="en_US">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Michał Mleczko: deweloper, rowerzysta, społecznik">
+    <meta name="twitter:description" content="Oprogramowanie i agenci AI zamiast ręcznej pracy, rowery cargo na rodzinne wyprawy i sprawy mieszkańców Radzymina.">
+    <meta name="twitter:image" content="https://mleczki.pl/og-image.png">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Michał Mleczko",
+        "url": "https://mleczki.pl/",
+        "image": "https://mleczki.pl/og-image.png",
+        "jobTitle": "Software Architect, AI Engineer",
+        "description": "Zastępuję ręczne procesy oprogramowaniem i agentami AI. Wynajmuję rowery cargo w Radzyminie i prowadzę sprawy mieszkańców miasta.",
+        "homeLocation": { "@type": "Place", "name": "Radzymin, Polska" },
+        "sameAs": [
+            "https://github.com/mleczakm",
+            "https://linkedin.com/in/michal-mleczko/",
+            "https://mleczakm.github.io/"
+        ],
+        "owns": [
+            { "@type": "SoftwareApplication", "name": "SprintSpaces", "url": "https://sprintspaces.github.io/", "applicationCategory": "BusinessApplication" },
+            { "@type": "SoftwareApplication", "name": "Party Queue", "url": "https://party-queue.github.io/", "applicationCategory": "MultimediaApplication", "operatingSystem": "Android" }
+        ]
+    }
+    </script>
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +87,8 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
-            background-color: #000;
+            /* Na wysokich ekranach pochylone panele odsłaniają rogi, więc tło kontynuuje ich kolory */
+            background: linear-gradient(to right, #0f172a 50%, #d97706 50%);
         }
 
         /* Kontener główny */
@@ -114,7 +164,7 @@
 
         .panel.active .panel-details {
             opacity: 1;
-            max-height: 500px;
+            max-height: 700px;
             transform: translateY(0);
             transition-delay: 0.2s; /* Opóźnienie, aby najpierw panel się rozszerzył */
         }
@@ -174,72 +224,178 @@
             }
         }
 
-        /* --- Wersja Mobile (Pionowy akordeon) --- */
+        /* --- Wersja Mobile (Panele jeden pod drugim, zwykłe przewijanie strony) --- */
         @media (max-width: 767px) {
-            .panel-scene {
-                width: 100%;
-                height: calc(100vh * 5 / 7);
-                height: calc(100dvh * 5 / 7);
-                transform: translate(-50%, -50%);
+            html {
+                height: auto;
+                overflow-x: hidden;
+                overflow-y: auto;
+                scroll-snap-type: y proximity;
             }
 
+            body {
+                height: auto;
+                overflow: visible;
+            }
+
+            #app-container {
+                height: auto;
+            }
+
+            /* Panel jest nieco niższy od ekranu, aby wystający kolejny zachęcał do przewinięcia */
+            .panel,
+            .panel.active {
+                flex: none;
+                min-height: calc(100vh - 2.5rem);
+                min-height: calc(100svh - 2.5rem);
+                align-items: flex-start;
+                scroll-snap-align: start;
+                cursor: auto;
+            }
+
+            .panel:last-child {
+                min-height: 100vh;
+                min-height: 100svh;
+            }
+
+            .panel-scene {
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+            }
+
+            /* Dolny pas panelu zostaje wolny dla animacji */
             .panel-content {
-                padding: 1.5rem;
+                padding: 4rem 1.5rem 11.5rem;
                 width: 100%;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 text-align: center;
-                transition: padding-bottom 0.5s ease;
             }
-            /* Ikony nie mieszczą się w wąskich panelach, a aktywny panel ma już animację */
+
+            .panel-content::before {
+                inset: 0 0 8rem;
+                background: linear-gradient(to bottom, var(--scene-scrim) 82%, transparent);
+            }
+
+            .panel.active .panel-content::before {
+                opacity: 0.8;
+            }
+
+            /* Treść jest stale widoczna, bo panele nie muszą się już rozwijać */
             .panel-icon {
                 display: none;
             }
-            .panel.active {
-                flex: 5; /* Na mobile dajemy więcej miejsca aktywnemu elementowi */
-            }
-            /* Dolny pas aktywnego panelu zostaje wolny dla animacji */
-            .panel.active .panel-content {
-                padding-top: 1rem;
-                padding-bottom: 8rem;
-            }
-            .panel-content::before {
-                inset: 0 -14% 7rem;
-            }
-            .panel-details {
-                max-height: 0;
-            }
+
+            .panel-details,
             .panel.active .panel-details {
-                max-height: calc(100vh * 5 / 7 - 14.5rem);
-                max-height: calc(100dvh * 5 / 7 - 14.5rem);
-                overflow-y: auto; /* Przewijanie wewnątrz panelu, jeśli treść jest długa */
+                opacity: 1;
+                max-height: none;
+                overflow: visible;
+                transform: none;
+                transition: none;
             }
-            .panel.active .panel-details .action-link {
-                margin-top: 0.75rem;
+
+            .panel.active .panel-title {
+                transform: none;
             }
-            /* Górny panel zostawia miejsce na przełącznik języka */
-            .panel:first-child .panel-content {
-                padding-top: 2.25rem;
-                padding-bottom: 0;
-            }
-            .panel:first-child.active .panel-content {
-                padding-bottom: 8rem;
-            }
-            .panel:first-child.active .panel-details {
-                max-height: calc(100vh * 5 / 7 - 15.75rem);
-                max-height: calc(100dvh * 5 / 7 - 15.75rem);
-            }
-            body .lang-switcher {
-                top: 0.5rem;
-                right: 0.5rem;
-                padding: 0.125rem 0.75rem;
-                font-size: 0.875rem;
-            }
-            /* Krawędzie rozdzielające w mobile */
+
             .panel:not(:last-child) {
                 border-bottom: 4px solid rgba(0,0,0,0.3);
             }
+
+            body .brand-bar {
+                top: 0.5rem;
+                left: 0.5rem;
+            }
+
+            body .lang-switcher {
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0 0.25rem;
+                font-size: 0.875rem;
+            }
+
+            /* Cele dotykowe wygodne dla palca */
+            .lang-switcher button {
+                min-width: 2.25rem;
+                min-height: 2.25rem;
+            }
+        }
+
+        /* Na niskich ekranach poziomych treść aktywnego panelu można przewinąć */
+        @media (min-width: 768px) and (max-height: 780px) {
+            .panel.active .panel-content {
+                max-height: 100%;
+                overflow-y: auto;
+                scrollbar-width: thin;
+            }
+
+            .panel-content::before {
+                inset: 0;
+            }
+
+            .panel-icon {
+                display: none;
+            }
+        }
+
+        /* Dotyk: bez błysku całego panelu i bez opóźnienia na podwójne stuknięcie */
+        .panel,
+        .lang-switcher,
+        .brand-bar {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+
+        .panel a,
+        .brand-bar {
+            transition: transform 0.15s ease, background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .panel a:active,
+        .brand-bar:active {
+            transform: scale(0.98);
+        }
+
+        /* Wyróżnione produkty */
+        .featured-card {
+            display: block;
+            padding: 0.875rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid rgba(96, 165, 250, 0.65);
+            background: linear-gradient(145deg, rgba(37, 99, 235, 0.38), rgba(15, 23, 42, 0.88));
+            box-shadow: 0 0 18px rgba(59, 130, 246, 0.25);
+            text-align: left;
+        }
+
+        .featured-card:hover {
+            border-color: #93c5fd;
+            box-shadow: 0 0 26px rgba(59, 130, 246, 0.5);
+        }
+
+        .project-link {
+            flex: 1 1 11rem;
+            display: block;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            background: rgba(15, 23, 42, 0.75);
+            text-align: left;
+        }
+
+        .project-link:hover {
+            background: #1e293b;
+        }
+
+        /* Znak marki i nazwa w rogu strony */
+        .brand-bar {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         /* Stylizacja przycisków i linków wewnątrz paneli */
@@ -266,7 +422,29 @@
 </head>
 <body class="text-white antialiased">
 
-    <div class="fixed top-4 right-4 z-50 flex gap-2 lang-switcher px-4 py-2 rounded-full shadow-lg">
+    <header>
+        <a href="https://mleczki.pl/" class="brand-bar fixed top-4 left-4 z-50 flex items-center gap-2 rounded-full shadow-lg pl-1 pr-3 py-1">
+            <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
+                <use href="#brand-mark"></use>
+            </svg>
+            <h1 class="text-sm font-semibold tracking-tight text-white">Michał Mleczko</h1>
+        </a>
+    </header>
+
+    <svg width="0" height="0" class="absolute" aria-hidden="true">
+        <symbol id="brand-mark" viewBox="0 0 32 32">
+            <clipPath id="brand-clip"><rect width="32" height="32" rx="8"></rect></clipPath>
+            <g clip-path="url(#brand-clip)">
+                <rect width="32" height="32" fill="#0d5336"></rect>
+                <path d="M0 0h13L6 32H0z" fill="#0f172a"></path>
+                <path d="M26 0h6v32H19z" fill="#d97706"></path>
+                <path d="M8 23v-9.5a3.75 3.75 0 0 1 7.5 0V23m0-9.5a3.75 3.75 0 0 1 7.5 0V23" fill="none" stroke="#fff" stroke-width="2.9" stroke-linecap="round"></path>
+                <circle cx="26.6" cy="22.4" r="1.9" fill="#fde047"></circle>
+            </g>
+        </symbol>
+    </svg>
+
+    <div class="fixed top-4 right-4 z-50 flex items-center gap-2 lang-switcher px-4 py-2 rounded-full shadow-lg">
         <button onclick="setLang('pl')" id="btn-pl" class="font-bold text-white hover:text-gray-300 transition-colors">PL</button>
         <span class="text-gray-400">|</span>
         <button onclick="setLang('en')" id="btn-en" class="text-gray-400 hover:text-white transition-colors">EN</button>
@@ -275,7 +453,7 @@
     <div id="app-container">
         
         <!-- PANEL 1: DEWELOPER -->
-        <div class="panel bg-devDark group" style="--scene-scrim: rgba(15, 23, 42, 0.82)" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+        <div class="panel bg-devDark group" data-theme-color="#0f172a" style="--scene-scrim: rgba(15, 23, 42, 0.82)" onmouseenter="activatePanel(this)" onclick="tapPanel(this, event)">
             <canvas class="panel-scene" aria-hidden="true"></canvas>
             <div class="panel-content">
                 <!-- SVG Ikona Dewelopera -->
@@ -287,40 +465,47 @@
                 </div>
                 
                 <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="dev_title">Deweloper</h2>
-                <p class="text-blue-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="dev_subtitle">Tworzę oprogramowanie, jakiego potrzebuje biznes.</p>
+                <p class="text-blue-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="dev_subtitle">Zastępuję ręczne procesy oprogramowaniem i agentami AI.</p>
                 
                 <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
-                    <p class="text-gray-300 text-sm md:text-base mb-6 max-w-md" data-i18n="dev_desc">
-                        Tworzę nowoczesne aplikacje od projektu aż po wdrożenie. Skupiam się na dostarczaniu realnej wartości, czystym kodzie i wydajnych rozwiązaniach.
+                    <p class="text-gray-300 text-sm md:text-base mb-4 max-w-md" data-i18n="dev_desc">
+                        Przepisywanie danych, potwierdzanie wpłat, odpowiadanie na te same pytania — za tę pracę płacisz co miesiąc. Zamieniam ją w system, który wykonuje ją za Twój zespół.
                     </p>
-                    
-                    <div class="w-full max-w-sm flex flex-col gap-3">
-                        <a href="https://github.com/mleczakm/class-cash" target="_blank" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg p-3 transition-colors">
-                            <div class="font-bold text-white flex items-center justify-between">
-                                <span>Class-Cash</span>
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                            </div>
-                            <div class="text-xs text-gray-400 mt-1" data-i18n="dev_classcash">Zarządzanie finansami klasowymi.</div>
+
+                    <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-3">
+                        <a href="https://sprintspaces.github.io/" target="_blank" rel="noopener" class="featured-card">
+                            <span class="font-bold text-white flex items-center justify-between">SprintSpaces <span aria-hidden="true">&#8599;</span></span>
+                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_ss_tag">Darmowe demo bez rejestracji</span>
+                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_ss_desc">Projekty i zgłoszenia rozproszone w arkuszach i mailach? Tu są w jednym miejscu, a stan prac znasz bez dopytywania zespołu.</span>
                         </a>
-                        
-                        <a href="https://github.com/mleczakm/kiddo" target="_blank" class="block w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-lg p-3 transition-colors">
-                            <div class="font-bold text-white flex items-center justify-between">
-                                <span>Kiddo</span>
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-                            </div>
-                            <div class="text-xs text-gray-400 mt-1" data-i18n="dev_kiddo">Aplikacja wspierająca rejestrację na zajęcia dla dzieci.</div>
+
+                        <a href="https://party-queue.github.io/" target="_blank" rel="noopener" class="featured-card">
+                            <span class="font-bold text-white flex items-center justify-between">Party Queue <span aria-hidden="true">&#8599;</span></span>
+                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_pq_tag">Android · open source</span>
+                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_pq_desc">Telefon z muzyką krąży po imprezie? Goście dodają piosenki ze swoich urządzeń, bez kont i instalacji, a Ty decydujesz, co zagra.</span>
                         </a>
                     </div>
-                    
-                    <a href="https://mleczakm.github.io/" target="_blank" class="action-link bg-blue-600 hover:bg-blue-500 text-white mt-6">
-                        <span data-i18n="dev_github">Moja strona na GitHubie</span> &rarr;
+
+                    <div class="w-full flex flex-wrap gap-2 mt-2">
+                        <a href="https://classy-cash.github.io/" target="_blank" rel="noopener" class="project-link">
+                            <span class="block text-xs font-bold text-white">Classy Cash <span aria-hidden="true">&#8599;</span></span>
+                            <span class="block text-[11px] text-gray-400" data-i18n="dev_classcash">Składki klasowe bez kolejnego arkusza.</span>
+                        </a>
+                        <a href="https://github.com/mleczakm/kiddo" target="_blank" rel="noopener" class="project-link">
+                            <span class="block text-xs font-bold text-white">Kiddo <span aria-hidden="true">&#8599;</span></span>
+                            <span class="block text-[11px] text-gray-400" data-i18n="dev_kiddo">Zapisy i płatności za zajęcia bez telefonów.</span>
+                        </a>
+                    </div>
+
+                    <a href="https://mleczakm.github.io/#projects" target="_blank" rel="noopener" class="action-link bg-blue-600 hover:bg-blue-500 text-white mt-4">
+                        <span data-i18n="dev_github">Zobacz efekty wdrożeń</span> &rarr;
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- PANEL 2: ROWERZYSTA -->
-        <div class="panel bg-cargoGreen group active" style="--scene-scrim: rgba(7, 56, 36, 0.8)" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+        <div class="panel bg-cargoGreen group active" data-theme-color="#0d5336" style="--scene-scrim: rgba(7, 56, 36, 0.8)" onmouseenter="activatePanel(this)" onclick="tapPanel(this, event)">
             <canvas class="panel-scene" aria-hidden="true"></canvas>
             <div class="panel-content">
                 <!-- SVG Ikona Rowerzysty z Białym Kaskiem -->
@@ -337,23 +522,22 @@
                 </div>
                 
                 <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase text-white" data-i18n="cyc_title">Rowerzysta</h2>
-                <p class="text-green-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="cyc_subtitle">Z wiatrem we włosach (i w białym kasku).</p>
+                <p class="text-green-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="cyc_subtitle">Rodzinna wyprawa bez auta i bez kupowania drogiego sprzętu.</p>
                 
                 <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
-                    <p class="text-green-100 text-sm md:text-base mb-4 max-w-md" data-i18n="cyc_desc">
-                        Pasjonat dwóch kółek. Na co dzień przemierzam miasto rowerem cargo. Promuję aktywny, rodzinny tryb życia i zrównoważony transport.
-                    </p>
+                    <p class="text-green-100 text-sm md:text-base mb-4 max-w-md" data-i18n="cyc_desc">Rower cargo to duży wydatek, a z dziećmi i bagażem zwykły rower nie wystarcza. W Radzyminie wynajmiesz sprzęt na dobę, sprawdzisz go na własnej trasie i ocenisz, czy Ci pasuje.</p>
                     
                     <div class="w-full max-w-sm bg-black/20 p-4 rounded-xl border border-white/10 text-left">
-                        <p class="font-bold mb-2 text-white/90" data-i18n="cyc_offer">Wynajmij sprzęt na rodzinne wyprawy:</p>
+                        <p class="font-bold mb-2 text-white/90" data-i18n="cyc_offer">Wynajem już od 30 zł za dobę:</p>
                         <ul class="text-sm text-green-100 space-y-2 list-disc list-inside">
-                            <li data-i18n="cyc_cargo">Rowery Cargo (Longjohn)</li>
-                            <li data-i18n="cyc_tandem">Rowery typu Tandem</li>
-                            <li data-i18n="cyc_trailers">Interesujące przyczepki rowerowe</li>
+                            <li data-i18n="cyc_cargo">Elektryczny longjohn: do 4 dzieci w skrzyni</li>
+                            <li data-i18n="cyc_tandem">Tandem: jedziecie razem, nawet przy różnej kondycji</li>
+                            <li data-i18n="cyc_trailers">Przyczepki: dla 2 dzieci, z pedałami i towarowa</li>
                         </ul>
+                        <p class="text-xs text-green-200 mt-3" data-i18n="cyc_booking">Rezerwacja bez telefonu: potwierdzenie około 30 s po płatności BLIK.</p>
                     </div>
 
-                    <a href="https://cargo.mleczki.pl" target="_blank" class="action-link bg-green-500 hover:bg-green-400 text-white mt-6 shadow-[0_0_15px_rgba(34,197,94,0.4)]">
+                    <a href="https://cargo.mleczki.pl" target="_blank" rel="noopener" class="action-link bg-green-500 hover:bg-green-400 text-white mt-6 shadow-[0_0_15px_rgba(34,197,94,0.4)]">
                         <span data-i18n="cyc_link">Odwiedź cargo.mleczki.pl</span> &rarr;
                     </a>
                 </div>
@@ -361,7 +545,7 @@
         </div>
 
         <!-- PANEL 3: SPOŁECZNIK -->
-        <div class="panel bg-activistAmber group" style="--scene-scrim: rgba(146, 64, 14, 0.82)" onmouseenter="activatePanel(this)" onclick="activatePanel(this)">
+        <div class="panel bg-activistAmber group" data-theme-color="#d97706" style="--scene-scrim: rgba(146, 64, 14, 0.82)" onmouseenter="activatePanel(this)" onclick="tapPanel(this, event)">
             <canvas class="panel-scene" aria-hidden="true"></canvas>
             <div class="panel-content">
                 <!-- SVG Ikona Społecznika -->
@@ -375,21 +559,19 @@
                 </div>
                 
                 <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="com_title">Społecznik</h2>
-                <p class="text-orange-200 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="com_subtitle">Radzymin i okolice, z myślą o ludziach.</p>
+                <p class="text-orange-200 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="com_subtitle">Żeby sprawy mieszkańców nie krążyły między urzędami.</p>
                 
                 <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
-                    <p class="text-white text-sm md:text-base mb-4 max-w-md" data-i18n="com_desc">
-                        Zajmuję się sprawami infrastruktury z perspektywy niechronionych uczestników ruchu. Walczę o bezpieczne przejścia dla pieszych, ciągi rowerowe i sprawny transport publiczny.
-                    </p>
+                    <p class="text-white text-sm md:text-base mb-4 max-w-md" data-i18n="com_desc">Ciężarówki w centrum mimo zakazu, niebezpieczne miejsca dla pieszych i rowerzystów, odpowiedzi odsyłające do kolejnego urzędu. Piszę wnioski i petycje, pytam o konkretne liczby i publicznie pokazuję każdy etap sprawy.</p>
                     
-                    <div class="w-full max-w-sm bg-orange-800/40 p-4 rounded-xl border border-white/20 mb-4">
-                        <p class="text-sm font-medium text-orange-50 italic" data-i18n="com_assoc">
-                            "Wkrótce planuję powołać stowarzyszenie, aby sformalizować i rozszerzyć nasze działania. Zapraszam do kontaktu każdego, kto chce pomóc!"
-                        </p>
+                    <div class="w-full max-w-md bg-orange-900/50 p-3 rounded-xl border border-white/20 mb-2 flex items-center gap-3 text-left">
+                        <span class="text-3xl font-extrabold text-white">136</span>
+                        <span class="text-xs text-orange-50" data-i18n="com_metric">naruszeń strefy ograniczenia tonażu w centrum Radzymina w lutym 2026. Dane z odpowiedzi Burmistrza na mój wniosek.</span>
                     </div>
+                    <p class="text-sm font-medium text-orange-50 italic max-w-md" data-i18n="com_assoc">Planuję powołać stowarzyszenie. Masz sprawę albo chcesz pomóc? Napisz do mnie.</p>
 
-                    <a href="https://radzymin.mleczki.pl" target="_blank" class="action-link bg-orange-700 hover:bg-orange-800 text-white border border-orange-500">
-                        <span data-i18n="com_link">Sprawdź radzymin.mleczki.pl</span> &rarr;
+                    <a href="https://radzymin.mleczki.pl" target="_blank" rel="noopener" class="action-link bg-orange-700 hover:bg-orange-800 text-white border border-orange-500">
+                        <span data-i18n="com_link">Zobacz sprawy mieszkańców</span> &rarr;
                     </a>
                 </div>
             </div>
@@ -409,25 +591,63 @@
             isTouchDevice = true;
         }
 
-        function activatePanel(selectedPanel) {
-            // Jeżeli korzystamy z urządzenia dotykowego, zapobiegamy przypadkowemu mruganiu
-            // i zamykaniu po kliknięciu. Pozwalamy na otwieranie kliknięciem.
+        // Na telefonie panele leżą jeden pod drugim i aktywny jest ten na środku ekranu
+        const stackedLayout = window.matchMedia('(max-width: 767px)');
+        const themeColor = document.querySelector('meta[name="theme-color"]');
+
+        function setActivePanel(selectedPanel) {
             panels.forEach(panel => {
                 if (panel !== selectedPanel) {
                     panel.classList.remove('active');
                 }
             });
             selectedPanel.classList.add('active');
+            themeColor.content = selectedPanel.dataset.themeColor;
         }
+
+        function activatePanel(selectedPanel) {
+            if (!stackedLayout.matches) {
+                setActivePanel(selectedPanel);
+            }
+        }
+
+        // Stuknięcie w wystający kolejny panel przewija do niego
+        function tapPanel(selectedPanel, event) {
+            if (!stackedLayout.matches) {
+                setActivePanel(selectedPanel);
+            } else if (!event.target.closest('a') && !selectedPanel.classList.contains('active')) {
+                const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                selectedPanel.scrollIntoView({ behavior: calm ? 'auto' : 'smooth' });
+            }
+        }
+
+        const focusObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setActivePanel(entry.target);
+                }
+            });
+        }, { rootMargin: '-50% 0px -50% 0px' });
+
+        function syncLayout() {
+            if (stackedLayout.matches) {
+                panels.forEach(panel => focusObserver.observe(panel));
+            } else {
+                focusObserver.disconnect();
+                setActivePanel(panels[1]);
+            }
+        }
+
+        stackedLayout.addEventListener('change', syncLayout);
+        syncLayout();
 
         // Dla urządzeń ze wskaźnikiem myszy, resetujemy do równych szerokości po wyjechaniu poza kontener
         const appContainer = document.getElementById('app-container');
         appContainer.addEventListener('mouseleave', () => {
-            if(!isTouchDevice) {
+            if(!isTouchDevice && !stackedLayout.matches) {
                 // Opcjonalnie: można zostawić ostatnio aktywny, lub zresetować.
                 // Wybieram pozostawienie środkowego jako domyślnego, tak jak na start.
-                panels.forEach(panel => panel.classList.remove('active'));
-                panels[1].classList.add('active'); // Środkowy (Rowerzysta) na zachętę
+                setActivePanel(panels[1]); // Środkowy (Rowerzysta) na zachętę
             }
         });
 
@@ -436,27 +656,36 @@
         
         const translations = {
             pl: {
+                meta_title: "Michał Mleczko — oprogramowanie i AI, rowery cargo, sprawy Radzymina",
+                meta_description: "Zastępuję ręczne procesy oprogramowaniem i agentami AI, wynajmuję rowery cargo na rodzinne wyprawy i pilnuję spraw mieszkańców Radzymina.",
+
                 dev_title: "Deweloper",
-                dev_subtitle: "Tworzę oprogramowanie, jakiego potrzebuje biznes.",
-                dev_desc: "Tworzę nowoczesne aplikacje od zaplecza aż po interfejs. Skupiam się na dostarczaniu realnej wartości, czystym kodzie i wydajnych rozwiązaniach.",
-                dev_classcash: "Aplikacja do zarządzania finansami klasowymi dla skarbników.",
-                dev_kiddo: "Aplikacja wspierająca rejestrację na zajęcia dla dzieci.",
-                dev_github: "Moja strona na GitHubie",
+                dev_subtitle: "Zastępuję ręczne procesy oprogramowaniem i agentami AI.",
+                dev_desc: "Przepisywanie danych, potwierdzanie wpłat, odpowiadanie na te same pytania — za tę pracę płacisz co miesiąc. Zamieniam ją w system, który wykonuje ją za Twój zespół.",
+                dev_ss_tag: "Darmowe demo bez rejestracji",
+                dev_ss_desc: "Projekty i zgłoszenia rozproszone w arkuszach i mailach? Tu są w jednym miejscu, a stan prac znasz bez dopytywania zespołu.",
+                dev_pq_tag: "Android · open source",
+                dev_pq_desc: "Telefon z muzyką krąży po imprezie? Goście dodają piosenki ze swoich urządzeń, bez kont i instalacji, a Ty decydujesz, co zagra.",
+                dev_classcash: "Składki klasowe bez kolejnego arkusza.",
+                dev_kiddo: "Zapisy i płatności za zajęcia bez telefonów.",
+                dev_github: "Zobacz efekty wdrożeń",
 
                 cyc_title: "Rowerzysta",
-                cyc_subtitle: "Z wiatrem we włosach (i w białym kasku).",
-                cyc_desc: "Pasjonat dwóch kółek. Na co dzień przemierzam miasto rowerem cargo. Promuję aktywny, rodzinny tryb życia i zrównoważony transport.",
-                cyc_offer: "Wynajmij sprzęt na rodzinne wyprawy:",
-                cyc_cargo: "Rowery Cargo (Longjohn)",
-                cyc_tandem: "Rowery typu Tandem",
-                cyc_trailers: "Niecodzienne przyczepki rowerowe",
+                cyc_subtitle: "Rodzinna wyprawa bez auta i bez kupowania drogiego sprzętu.",
+                cyc_desc: "Rower cargo to duży wydatek, a z dziećmi i bagażem zwykły rower nie wystarcza. W Radzyminie wynajmiesz sprzęt na dobę, sprawdzisz go na własnej trasie i ocenisz, czy Ci pasuje.",
+                cyc_offer: "Wynajem już od 30 zł za dobę:",
+                cyc_cargo: "Elektryczny longjohn: do 4 dzieci w skrzyni",
+                cyc_tandem: "Tandem: jedziecie razem, nawet przy różnej kondycji",
+                cyc_trailers: "Przyczepki: dla 2 dzieci, z pedałami i towarowa",
+                cyc_booking: "Rezerwacja bez telefonu: potwierdzenie około 30 s po płatności BLIK.",
                 cyc_link: "Odwiedź cargo.mleczki.pl",
 
                 com_title: "Społecznik",
-                com_subtitle: "Radzymin i okolice, z myślą o ludziach.",
-                com_desc: "Zajmuję się sprawami infrastruktury z perspektywy niechronionych uczestników ruchu. Walczę o bezpieczne przejścia dla pieszych, ciągi rowerowe i sprawny transport publiczny.",
-                com_assoc: "\"Wkrótce planuję powołać stowarzyszenie, aby sformalizować i rozszerzyć nasze działania. Zapraszam każdego, kto chce wesprzeć inicjatywę!\"",
-                com_link: "Sprawdź radzymin.mleczki.pl",
+                com_subtitle: "Żeby sprawy mieszkańców nie krążyły między urzędami.",
+                com_desc: "Ciężarówki w centrum mimo zakazu, niebezpieczne miejsca dla pieszych i rowerzystów, odpowiedzi odsyłające do kolejnego urzędu. Piszę wnioski i petycje, pytam o konkretne liczby i publicznie pokazuję każdy etap sprawy.",
+                com_metric: "naruszeń strefy ograniczenia tonażu w centrum Radzymina w lutym 2026. Dane z odpowiedzi Burmistrza na mój wniosek.",
+                com_assoc: "Planuję powołać stowarzyszenie. Masz sprawę albo chcesz pomóc? Napisz do mnie.",
+                com_link: "Zobacz sprawy mieszkańców",
 
                 scene_caption: "POMYSŁ → DZIAŁAJĄCY SYSTEM",
                 scene_node_data: "Twoje dane",
@@ -480,27 +709,36 @@
                 scene_stamp: "WPŁYNĘŁO",
             },
             en: {
+                meta_title: "Michał Mleczko — software and AI, cargo bikes, Radzymin affairs",
+                meta_description: "I replace manual processes with software and AI agents, rent out cargo bikes for family trips and follow up on residents' issues in Radzymin.",
+
                 dev_title: "Developer",
-                dev_subtitle: "Software tailored to business needs.",
-                dev_desc: "I build modern applications from backend to frontend. I focus on delivering real value, clean code, and efficient solutions.",
-                dev_classcash: "Class finance management application for treasurers.",
-                dev_kiddo: "Application supporting registration for kids' activities.",
-                dev_github: "My GitHub page",
+                dev_subtitle: "I replace manual processes with software and AI agents.",
+                dev_desc: "Retyping data, confirming payments, answering the same questions: you pay for that work every month. I turn it into a system that does it for your team.",
+                dev_ss_tag: "Free demo, no sign-up",
+                dev_ss_desc: "Projects and tickets scattered across spreadsheets and email? Here they live in one place, and you know the status without asking around.",
+                dev_pq_tag: "Android · open source",
+                dev_pq_desc: "Is the music phone being passed around the party? Guests add songs from their own devices, no accounts or installs, and you decide what plays.",
+                dev_classcash: "Class fees without yet another spreadsheet.",
+                dev_kiddo: "Class sign-ups and payments without phone calls.",
+                dev_github: "See the results",
 
                 cyc_title: "Cyclist",
-                cyc_subtitle: "Wind in my hair (and a white helmet).",
-                cyc_desc: "Two-wheel enthusiast. I commute daily on a cargo bike. Promoting an active family lifestyle and sustainable transport.",
-                cyc_offer: "Rent gear for family trips:",
-                cyc_cargo: "Cargo Bikes (Longjohn)",
-                cyc_tandem: "Tandem bicycles",
-                cyc_trailers: "Interesting bike trailers",
+                cyc_subtitle: "A family trip without a car or an expensive purchase.",
+                cyc_desc: "A cargo bike is a big expense, and a regular bike won't carry kids and luggage. In Radzymin you can rent the gear by the day, try it on your own route and see if it suits you.",
+                cyc_offer: "Rentals from 30 PLN a day:",
+                cyc_cargo: "Electric longjohn: up to 4 kids in the box",
+                cyc_tandem: "Tandem: ride together, even at different fitness levels",
+                cyc_trailers: "Trailers: for 2 kids, pedal-powered and cargo",
+                cyc_booking: "Book without a phone call: confirmed about 30 s after your BLIK payment.",
                 cyc_link: "Visit cargo.mleczki.pl",
 
                 com_title: "Activist",
-                com_subtitle: "Radzymin & surroundings, for the people.",
-                com_desc: "Focusing on infrastructure from the perspective of vulnerable road users. Advocating for safe pedestrian crossings, cycling paths, and efficient public transit.",
-                com_assoc: "\"I plan to establish an association soon to formalize and expand our efforts. I invite anyone willing to help to join the initiative!\"",
-                com_link: "Check radzymin.mleczki.pl",
+                com_subtitle: "So residents' issues don't just circle between offices.",
+                com_desc: "Trucks in the town centre despite the ban, dangerous spots for pedestrians and cyclists, replies that point you to yet another office. I file requests and petitions, ask for specific numbers and publish every stage of each case.",
+                com_metric: "violations of the weight-limit zone in central Radzymin in February 2026. Figures from the Mayor's reply to my request.",
+                com_assoc: "I plan to found an association. Got an issue or want to help? Get in touch.",
+                com_link: "See residents' cases",
 
                 scene_caption: "IDEA → WORKING SYSTEM",
                 scene_node_data: "Your data",
@@ -551,6 +789,10 @@
             
             // Ustawienie atrybutu html lang dla dostępności
             document.documentElement.lang = lang;
+
+            // Tytuł i opis karty w wybranym języku
+            document.title = translations[lang].meta_title;
+            document.querySelector('meta[name="description"]').content = translations[lang].meta_description;
         }
 
         // Inicjalizacja po załadowaniu

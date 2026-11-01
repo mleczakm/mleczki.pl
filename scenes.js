@@ -326,15 +326,17 @@
 
                 // Nagłówek i licznik scenariuszy; na telefonie nie ma na nie miejsca
                 if (view.mobile) return;
-                const top = view.h * 0.052;
                 c.textBaseline = 'middle';
                 c.textAlign = 'center';
                 setFont(c, 700, 10);
                 if ('letterSpacing' in c) c.letterSpacing = '2px';
                 const titleX = (view.textL + view.textR) / 2;
+                const titleW = c.measureText(label('scene_caption')).width;
+                // Na wąskim ekranie podpis schodzi poniżej znaku marki w lewym górnym rogu
+                const clearsBrand = titleX - titleW / 2 + view.screenX > 200 / view.scale;
+                const top = clearsBrand ? view.h * 0.052 : 80 / view.scale;
                 c.fillStyle = 'rgba(191,219,254,.85)';
                 c.fillText(label('scene_caption'), titleX, top);
-                const titleW = c.measureText(label('scene_caption')).width;
                 if ('letterSpacing' in c) c.letterSpacing = '0px';
                 c.fillStyle = '#60a5fa';
                 disc(c, titleX - titleW / 2 - 12, top, 3 + Math.sin(clock * 2.4));
@@ -896,42 +898,47 @@
             disc(c, x, y, 2.6);
         }
 
-        function drawCyclist(c, x, ground, pal) {
+        // Czarny Urban Arrow Family: długi rozstaw osi, małe przednie koło i skrzynia EPP z napisem na boku
+        function drawCyclist(c, x, ground, pal, bikeScale) {
             const dark = 1 - clamp(pal.light * 2.2);
-            const wheelAngle = dist / 30;
-            const crank = dist / 30 / 2.6;
+            const crank = dist / 31 / 2.6;
             const bob = Math.sin(crank * 2) * 0.9;
+
+            c.save();
+            c.translate(x, ground);
+            c.scale(bikeScale, bikeScale);
+            c.translate(-x, -ground);
 
             // Światło przedniej lampki
             if (dark > 0.05) {
-                const cone = c.createLinearGradient(x + 50, 0, x + 300, 0);
+                const cone = c.createLinearGradient(x + 116, 0, x + 380, 0);
                 cone.addColorStop(0, `rgba(255,244,200,${dark * 0.5})`);
                 cone.addColorStop(1, 'rgba(255,244,200,0)');
                 c.fillStyle = cone;
-                poly(c, [x + 56, ground - 68, x + 310, ground - 34, x + 310, ground + 26, x + 56, ground - 62]);
+                poly(c, [x + 118, ground - 72, x + 390, ground - 32, x + 390, ground + 26, x + 118, ground - 66]);
                 c.fill();
             }
 
             // Cień
             c.fillStyle = `rgba(0,0,0,${0.12 + pal.light * 0.14})`;
             c.beginPath();
-            c.ellipse(x + 2, ground + 3, 88, 6, 0, 0, Math.PI * 2);
+            c.ellipse(x + 8, ground + 3, 156, 6, 0, 0, Math.PI * 2);
             c.fill();
 
-            const R = 30;
-            const rear = [x - 48, ground - R], front = [x + 52, ground - R];
-            const bb = [x - 6, ground - R + 4];
-            const seat = [x - 25, ground - 74];
-            const head = [x + 33, ground - 76];
-            const headLow = [x + 37, ground - 62];
+            const rearR = 31, frontR = 24;
+            const rear = [x - 112, ground - rearR], front = [x + 128, ground - frontR];
+            const bb = [x - 62, ground - 29];
+            const seat = [x - 78, ground - 90];
+            const seatCluster = [x - 73, ground - 70];
+            const head = [x + 112, ground - 64];
             const hip = [seat[0] + 1, seat[1] - 7 + bob * 0.3];
-            const shoulder = [x + 13, ground - 123 + bob];
-            const grip = [x + 45, ground - 84];
+            const shoulder = [x - 50, ground - 146 + bob];
+            const grip = [x - 4, ground - 112];
             const pedal = (angle) => [bb[0] + Math.cos(angle) * 13, bb[1] + Math.sin(angle) * 13];
 
             const drawLeg = (angle, color, shoe) => {
                 const foot = pedal(angle);
-                const knee = joint(hip[0], hip[1], foot[0], foot[1], 37, 38, -1);
+                const knee = joint(hip[0], hip[1], foot[0], foot[1], 40, 41, -1);
                 c.strokeStyle = color;
                 c.lineCap = 'round';
                 c.lineWidth = 9.5;
@@ -944,44 +951,112 @@
                 c.lineCap = 'butt';
             };
 
-            drawLeg(crank + Math.PI, '#1e293b', '#0f172a');
-            drawWheel(c, rear[0], rear[1], R, wheelAngle, pal);
-            drawWheel(c, front[0], front[1], R, wheelAngle, pal);
+            // Czarne rury z jasną krawędzią, aby rower nie ginął na ciemnej drodze
+            const tube = (width, trace) => {
+                c.lineCap = 'round';
+                c.lineJoin = 'round';
+                c.strokeStyle = 'rgba(203,213,225,.38)';
+                c.lineWidth = width + 1.6;
+                c.beginPath();
+                trace();
+                c.stroke();
+                c.strokeStyle = '#111316';
+                c.lineWidth = width;
+                c.beginPath();
+                trace();
+                c.stroke();
+                c.lineCap = 'butt';
+                c.lineJoin = 'miter';
+            };
 
-            // Rama
-            c.strokeStyle = '#e2e8f0';
-            c.lineWidth = 3.4;
-            c.lineCap = 'round';
-            poly(c, [bb[0], bb[1], seat[0] + 2, seat[1] + 6, head[0], head[1] + 3, headLow[0], headLow[1]]);
+            drawLeg(crank + Math.PI, '#1e293b', '#0f172a');
+            drawWheel(c, rear[0], rear[1], rearR, dist / rearR, pal);
+            drawWheel(c, front[0], front[1], frontR, dist / frontR, pal);
+
+            // Błotniki
+            c.strokeStyle = '#111316';
+            c.lineWidth = 2.6;
+            c.beginPath();
+            c.arc(rear[0], rear[1], rearR + 3.5, Math.PI * 1.02, Math.PI * 1.85);
             c.stroke();
-            line(c, bb[0], bb[1], rear[0], rear[1]);
-            line(c, seat[0] + 2, seat[1] + 6, rear[0], rear[1]);
-            line(c, head[0], head[1] + 3, headLow[0], headLow[1]);
-            line(c, headLow[0], headLow[1], front[0], front[1]);
-            c.lineWidth = 2.4;
-            c.strokeStyle = '#94a3b8';
-            line(c, seat[0] + 2, seat[1] + 6, seat[0], seat[1]);
-            line(c, head[0], head[1], x + 35, ground - 84);
-            c.strokeStyle = '#0f172a';
-            c.lineWidth = 3.4;
-            line(c, x + 35, ground - 84, x + 48, ground - 85);
-            // Siodełko
-            c.fillStyle = '#0f172a';
-            roundedRect(c, seat[0] - 12, seat[1] - 3, 25, 5, 2.5);
+            c.beginPath();
+            c.arc(front[0], front[1], frontR + 3.5, Math.PI * 1.15, Math.PI * 1.95);
+            c.stroke();
+
+            // Rama: niska belka pod skrzynią, tylny trójkąt i widelec
+            tube(5.5, () => {
+                c.moveTo(head[0], head[1]);
+                c.quadraticCurveTo(x + 96, ground - 11, x + 60, ground - 11);
+                c.lineTo(x - 30, ground - 11);
+                c.quadraticCurveTo(x - 52, ground - 12, bb[0], bb[1]);
+                c.lineTo(seat[0] + 2, seat[1] + 6);
+            });
+            tube(3.2, () => {
+                c.moveTo(bb[0], bb[1]);
+                c.lineTo(rear[0], rear[1]);
+                c.lineTo(seatCluster[0], seatCluster[1]);
+            });
+            tube(4, () => {
+                c.moveTo(head[0], head[1] - 4);
+                c.lineTo(front[0], front[1]);
+            });
+
+            // Silnik centralny, korba i łańcuch
+            c.fillStyle = '#1a1d21';
+            roundedRect(c, bb[0] - 11, bb[1] - 11, 21, 20, 5);
             c.fill();
-            // Korba i łańcuch
             c.strokeStyle = '#475569';
             c.lineWidth = 1.2;
-            c.beginPath();
-            c.arc(bb[0], bb[1], 8, 0, Math.PI * 2);
-            c.stroke();
             line(c, bb[0], bb[1] - 8, rear[0], rear[1] - 4);
             line(c, bb[0], bb[1] + 8, rear[0], rear[1] + 4);
             const crankEnd = pedal(crank);
-            c.strokeStyle = '#94a3b8';
+            c.strokeStyle = '#64748b';
             c.lineWidth = 2.6;
+            c.lineCap = 'round';
             line(c, bb[0], bb[1], crankEnd[0], crankEnd[1]);
             c.lineCap = 'butt';
+
+            // Siodełko
+            c.fillStyle = '#0a0b0d';
+            roundedRect(c, seat[0] - 13, seat[1] - 3, 27, 5.5, 2.7);
+            c.fill();
+
+            // Kolumna kierownicy
+            tube(4, () => {
+                c.moveTo(x - 22, ground - 70);
+                c.lineTo(x - 14, ground - 112);
+                c.lineTo(x + 1, ground - 113);
+            });
+
+            // Skrzynia z pianki EPP
+            const shell = c.createLinearGradient(0, ground - 82, 0, ground - 17);
+            shell.addColorStop(0, '#26292d');
+            shell.addColorStop(0.3, '#16181b');
+            shell.addColorStop(1, '#0b0c0e');
+            c.fillStyle = shell;
+            c.beginPath();
+            c.moveTo(x - 26, ground - 82);
+            c.lineTo(x + 92, ground - 70);
+            c.quadraticCurveTo(x + 98, ground - 69, x + 97, ground - 63);
+            c.lineTo(x + 86, ground - 26);
+            c.quadraticCurveTo(x + 83, ground - 17, x + 72, ground - 17);
+            c.lineTo(x - 12, ground - 17);
+            c.quadraticCurveTo(x - 24, ground - 17, x - 26, ground - 29);
+            c.closePath();
+            c.fill();
+            c.strokeStyle = 'rgba(203,213,225,.28)';
+            c.lineWidth = 1;
+            c.stroke();
+            // Górna krawędź skrzyni
+            c.strokeStyle = '#3a4046';
+            c.lineWidth = 2.4;
+            line(c, x - 25, ground - 80.5, x + 92, ground - 68.5);
+            // Biały napis w miejscu logo producenta
+            c.fillStyle = '#ffffff';
+            c.textAlign = 'center';
+            c.textBaseline = 'middle';
+            setFont(c, 700, 12.5);
+            c.fillText('cargo.mleczki.pl', x + 34, ground - 42);
 
             drawLeg(crank, '#334155', '#1e293b');
 
@@ -1031,7 +1106,7 @@
             c.fillStyle = '#1e293b';
             disc(c, headCenter[0] + 6, headCenter[1] - 0.5, 1.2);
             // Rękaw i dłoń
-            const elbow = joint(shoulder[0] + 1, shoulder[1] + 1, grip[0], grip[1], 25, 25, 1);
+            const elbow = joint(shoulder[0] + 1, shoulder[1] + 1, grip[0], grip[1], 31, 31, 1);
             c.strokeStyle = '#facc15';
             c.lineCap = 'round';
             c.lineWidth = 8.5;
@@ -1043,10 +1118,11 @@
             disc(c, grip[0], grip[1], 4);
             // Lampki
             c.fillStyle = dark > 0.05 ? '#fff7cc' : '#cbd5e1';
-            disc(c, x + 48, ground - 78, 2.6);
+            disc(c, x + 117, ground - 70, 3);
             const blink = Math.sin(clock * 8) > 0 ? 1 : 0.35;
             c.fillStyle = `rgba(248,113,113,${0.45 + dark * 0.55 * blink})`;
-            disc(c, seat[0] - 8, seat[1] + 9, 2.4);
+            disc(c, rear[0] - 30, rear[1] - 14, 2.6);
+            c.restore();
         }
 
         function drawPrecipitation(c, view) {
@@ -1148,9 +1224,10 @@
                 });
 
                 const ground = (roadTop + roadBottom) / 2 + 20;
-                const targetX = clamp(lerp(view.left(ground), view.textL, 0.62), view.left(ground) + 130, view.w);
-                const riderX = lerp(view.left(ground) - 170, targetX, smooth(intro));
-                drawCyclist(c, riderX, ground, pal);
+                const bikeScale = view.mobile ? 1.25 : 1; // Na telefonie napis na skrzyni musi być czytelny
+                const targetX = clamp(lerp(view.left(ground), view.textL, 0.62), view.left(ground) + 150 * bikeScale, view.w);
+                const riderX = lerp(view.left(ground) - 190 * bikeScale, targetX, smooth(intro));
+                drawCyclist(c, riderX, ground, pal, bikeScale);
                 drawPrecipitation(c, view);
 
                 if (weather.fog > 0.02) {
@@ -1695,8 +1772,10 @@
         const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
         if (!cssW || !cssH) return;
         stage.dpr = Math.min(window.devicePixelRatio || 1, 2);
-        canvas.width = Math.round(cssW * stage.dpr);
-        canvas.height = Math.round(cssH * stage.dpr);
+        // Ustawienie rozmiaru czyści płótno, więc robimy to tylko przy realnej zmianie
+        const backingW = Math.round(cssW * stage.dpr), backingH = Math.round(cssH * stage.dpr);
+        if (canvas.width !== backingW) canvas.width = backingW;
+        if (canvas.height !== backingH) canvas.height = backingH;
 
         const vw = window.innerWidth;
         const mobile = vw < 768;
@@ -1712,6 +1791,7 @@
             ? { w, h, scale, mobile, left: () => 0, right: () => w, textL: 0, textR: w }
             : {
                 w, h, scale, mobile,
+                screenX: originX / scale,
                 left: (y) => (Math.max(panelLeft + shift(y), 0) - originX) / scale,
                 right: (y) => (Math.min(panelLeft + panelW + shift(y), vw) - originX) / scale,
                 textL: (cssW - textW) / 2 / scale,
@@ -1781,13 +1861,18 @@
         if (reducedMotion.matches) stages.forEach((stage) => { if (stage.active) render(stage); });
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
-    window.addEventListener('resize', () => {
+    function remeasure() {
         stages.forEach((stage) => {
             stage.view = null;
             if (stage.active) {
                 measure(stage);
-                if (reducedMotion.matches) render(stage);
+                render(stage);
             }
         });
-    });
+    }
+
+    // Na telefonie wysokość panelu zależy też od treści, np. po zmianie języka
+    window.addEventListener('resize', remeasure);
+    const sizeObserver = new ResizeObserver(remeasure);
+    stages.forEach((stage) => sizeObserver.observe(stage.canvas));
 })();
