@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Michał Mleczko — oprogramowanie i AI, rowery cargo, sprawy Radzymina</title>
-    <meta name="description" content="Zastępuję ręczne procesy oprogramowaniem i agentami AI, wynajmuję rowery cargo na rodzinne wyprawy i pilnuję spraw mieszkańców Radzymina.">
+    <title>Michał Mleczko — programista, rowerzysta, społecznik</title>
+    <meta name="description" content="Osobista strona Michała Mleczki. Projekty programistyczne, rowery cargo i działania społeczne w Radzyminie — poznaj mnie i moje inicjatywy.">
     <meta name="author" content="Michał Mleczko">
     <link rel="canonical" href="https://mleczki.pl/">
 
@@ -19,8 +19,8 @@
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Michał Mleczko">
     <meta property="og:url" content="https://mleczki.pl/">
-    <meta property="og:title" content="Michał Mleczko: deweloper, rowerzysta, społecznik">
-    <meta property="og:description" content="Oprogramowanie i agenci AI zamiast ręcznej pracy, rowery cargo na rodzinne wyprawy i sprawy mieszkańców Radzymina.">
+    <meta property="og:title" content="Michał Mleczko — programista, rowerzysta, społecznik">
+    <meta property="og:description" content="Osobista strona Michała Mleczki. Projekty programistyczne, rowery cargo i działania społeczne w Radzyminie — poznaj mnie i moje inicjatywy.">
     <meta property="og:image" content="https://mleczki.pl/og-image.png">
     <meta property="og:image:type" content="image/png">
     <meta property="og:image:width" content="1200">
@@ -29,8 +29,8 @@
     <meta property="og:locale" content="pl_PL">
     <meta property="og:locale:alternate" content="en_US">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Michał Mleczko: deweloper, rowerzysta, społecznik">
-    <meta name="twitter:description" content="Oprogramowanie i agenci AI zamiast ręcznej pracy, rowery cargo na rodzinne wyprawy i sprawy mieszkańców Radzymina.">
+    <meta name="twitter:title" content="Michał Mleczko — programista, rowerzysta, społecznik">
+    <meta name="twitter:description" content="Osobista strona Michała Mleczki. Projekty programistyczne, rowery cargo i działania społeczne w Radzyminie — poznaj mnie i moje inicjatywy.">
     <meta name="twitter:image" content="https://mleczki.pl/og-image.png">
 
     <script type="application/ld+json">
@@ -41,7 +41,7 @@
         "url": "https://mleczki.pl/",
         "image": "https://mleczki.pl/og-image.png",
         "jobTitle": "Software Architect, AI Engineer",
-        "description": "Zastępuję ręczne procesy oprogramowaniem i agentami AI. Wynajmuję rowery cargo w Radzyminie i prowadzę sprawy mieszkańców miasta.",
+        "description": "Osobista strona Michała Mleczki. Projekty programistyczne, rowery cargo i działania społeczne w Radzyminie — poznaj mnie i moje inicjatywy.",
         "homeLocation": { "@type": "Place", "name": "Radzymin, Polska" },
         "sameAs": [
             "https://github.com/mleczakm",
@@ -91,9 +91,33 @@
             background: linear-gradient(to right, #0f172a 50%, #d97706 50%);
         }
 
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .site-intro {
+            flex: none;
+            position: relative;
+            z-index: 30;
+            padding: 4rem 1.5rem 1.25rem;
+            background: #0f172a;
+            text-align: center;
+            scroll-snap-align: start;
+        }
+
+        .site-intro > p {
+            max-width: 48rem;
+            margin: 0 auto;
+            color: #cbd5e1;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
         /* Kontener główny */
         #app-container {
-            height: 100%;
+            flex: 1;
+            min-height: 0;
             width: 100%;
             display: flex;
             flex-direction: column; /* Mobile first */
@@ -180,11 +204,14 @@
         /* --- Wersja Desktop (Ukośne pasy) --- */
         @media (min-width: 768px) {
             #app-container {
-                /* Rozszerzamy kontener, aby ukryć poszarpane krawędzie po pochyleniu */
-                width: 120%;
-                margin-left: -10%;
+                /* Kolory tła wypełniają narożniki bez wysuwania nagłówków poza ekran. */
+                width: 100%;
                 flex-direction: row;
                 transform: skewX(-12deg);
+            }
+
+            .panel:not(.active) .panel-title {
+                font-size: clamp(0.875rem, 1.7vw, 2rem);
             }
 
             /* Scena jest prosta i szersza od panelu, aby wypełnić jego ukośne krawędzie */
@@ -326,7 +353,7 @@
         }
 
         /* Na niskich ekranach poziomych treść aktywnego panelu można przewinąć */
-        @media (min-width: 768px) and (max-height: 780px) {
+        @media (min-width: 768px) and (max-height: 900px) {
             .panel.active .panel-content {
                 max-height: 100%;
                 overflow-y: auto;
@@ -422,13 +449,14 @@
 </head>
 <body class="text-white antialiased">
 
-    <header>
+    <header class="site-intro">
         <a href="https://mleczki.pl/" class="brand-bar fixed top-4 left-4 z-50 flex items-center gap-2 rounded-full shadow-lg pl-1 pr-3 py-1">
             <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true">
                 <use href="#brand-mark"></use>
             </svg>
             <h1 class="text-sm font-semibold tracking-tight text-white">Michał Mleczko</h1>
         </a>
+        <p data-i18n="site_intro">Moje projekty programistyczne, rowerowe pasje i działania na rzecz Radzymina. Tutaj znajdziesz odnośniki do każdego z tych obszarów.</p>
     </header>
 
     <svg width="0" height="0" class="absolute" aria-hidden="true">
@@ -464,41 +492,39 @@
                     </svg>
                 </div>
                 
-                <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="dev_title">Deweloper</h2>
-                <p class="text-blue-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="dev_subtitle">Zastępuję ręczne procesy oprogramowaniem i agentami AI.</p>
+                <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="dev_title">Programista</h2>
+                <p class="text-blue-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="dev_subtitle">Tworzę aplikacje internetowe i rozwiązania z AI.</p>
                 
                 <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
-                    <p class="text-gray-300 text-sm md:text-base mb-4 max-w-md" data-i18n="dev_desc">
-                        Przepisywanie danych, potwierdzanie wpłat, odpowiadanie na te same pytania — za tę pracę płacisz co miesiąc. Zamieniam ją w system, który wykonuje ją za Twój zespół.
-                    </p>
+                    <p class="text-gray-300 text-sm md:text-base mb-4 max-w-md" data-i18n="dev_desc">Projektuję i rozwijam oprogramowanie: od narzędzi do pracy zespołowej po aplikacje do zapisów i płatności. Poniżej znajdziesz kilka moich projektów, a na stronie zawodowej — więcej realizacji i informacje o współpracy.</p>
 
                     <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-3">
                         <a href="https://sprintspaces.github.io/" target="_blank" rel="noopener" class="featured-card">
                             <span class="font-bold text-white flex items-center justify-between">SprintSpaces <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_ss_tag">Darmowe demo bez rejestracji</span>
-                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_ss_desc">Projekty i zgłoszenia rozproszone w arkuszach i mailach? Tu są w jednym miejscu, a stan prac znasz bez dopytywania zespołu.</span>
+                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_ss_tag">Zarządzanie pracą zespołu</span>
+                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_ss_desc">Aplikacja do prowadzenia projektów, planowania zadań, obsługi zgłoszeń i ewidencji czasu pracy.</span>
                         </a>
 
                         <a href="https://party-queue.github.io/" target="_blank" rel="noopener" class="featured-card">
                             <span class="font-bold text-white flex items-center justify-between">Party Queue <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_pq_tag">Android · open source</span>
-                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_pq_desc">Telefon z muzyką krąży po imprezie? Goście dodają piosenki ze swoich urządzeń, bez kont i instalacji, a Ty decydujesz, co zagra.</span>
+                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_pq_tag">Muzyka na imprezę · Android</span>
+                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_pq_desc">Wspólna kolejka muzyczna na imprezę. Goście dodają utwory ze swoich telefonów, a gospodarz zarządza odtwarzaniem.</span>
                         </a>
                     </div>
 
                     <div class="w-full flex flex-wrap gap-2 mt-2">
                         <a href="https://classy-cash.github.io/" target="_blank" rel="noopener" class="project-link">
                             <span class="block text-xs font-bold text-white">Classy Cash <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] text-gray-400" data-i18n="dev_classcash">Składki klasowe bez kolejnego arkusza.</span>
+                            <span class="block text-[11px] text-gray-400" data-i18n="dev_classcash">Aplikacja do rozliczania składek klasowych.</span>
                         </a>
                         <a href="https://github.com/mleczakm/kiddo" target="_blank" rel="noopener" class="project-link">
                             <span class="block text-xs font-bold text-white">Kiddo <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] text-gray-400" data-i18n="dev_kiddo">Zapisy i płatności za zajęcia bez telefonów.</span>
+                            <span class="block text-[11px] text-gray-400" data-i18n="dev_kiddo">Aplikacja do zapisów na zajęcia dla dzieci.</span>
                         </a>
                     </div>
 
-                    <a href="https://mleczakm.github.io/#projects" target="_blank" rel="noopener" class="action-link bg-blue-600 hover:bg-blue-500 text-white mt-4">
-                        <span data-i18n="dev_github">Zobacz efekty wdrożeń</span> &rarr;
+                    <a href="https://mleczakm.github.io/" target="_blank" rel="noopener" class="action-link bg-blue-600 hover:bg-blue-500 text-white mt-4">
+                        <span data-i18n="dev_github">Projekty i współpraca</span> &rarr;
                     </a>
                 </div>
             </div>
@@ -522,23 +548,24 @@
                 </div>
                 
                 <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase text-white" data-i18n="cyc_title">Rowerzysta</h2>
-                <p class="text-green-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="cyc_subtitle">Rodzinna wyprawa bez auta i bez kupowania drogiego sprzętu.</p>
+                <p class="text-green-300 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="cyc_subtitle">Rower cargo na co dzień i na rodzinne wyprawy.</p>
                 
                 <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
-                    <p class="text-green-100 text-sm md:text-base mb-4 max-w-md" data-i18n="cyc_desc">Rower cargo to duży wydatek, a z dziećmi i bagażem zwykły rower nie wystarcza. W Radzyminie wynajmiesz sprzęt na dobę, sprawdzisz go na własnej trasie i ocenisz, czy Ci pasuje.</p>
+                    <p class="text-green-100 text-sm md:text-base mb-4 max-w-md" data-i18n="cyc_desc">Na co dzień jeżdżę rowerem cargo. Swoją rowerową pasję rozwijam na cargo.mleczki.pl — dziś możesz tam wypożyczyć sprzęt i wypróbować go na własnej trasie.</p>
                     
                     <div class="w-full max-w-sm bg-black/20 p-4 rounded-xl border border-white/10 text-left">
-                        <p class="font-bold mb-2 text-white/90" data-i18n="cyc_offer">Wynajem już od 30 zł za dobę:</p>
+                        <p class="font-bold mb-2 text-white/90" data-i18n="cyc_offer">Wypożyczalnia w Radzyminie:</p>
                         <ul class="text-sm text-green-100 space-y-2 list-disc list-inside">
-                            <li data-i18n="cyc_cargo">Elektryczny longjohn: do 4 dzieci w skrzyni</li>
-                            <li data-i18n="cyc_tandem">Tandem: jedziecie razem, nawet przy różnej kondycji</li>
-                            <li data-i18n="cyc_trailers">Przyczepki: dla 2 dzieci, z pedałami i towarowa</li>
+                            <li data-i18n="cyc_cargo">Elektryczny rower cargo</li>
+                            <li data-i18n="cyc_tandem">Tandem dla dwóch osób</li>
+                            <li data-i18n="cyc_trailers">Przyczepki dla dzieci i do przewozu bagażu</li>
                         </ul>
-                        <p class="text-xs text-green-200 mt-3" data-i18n="cyc_booking">Rezerwacja bez telefonu: potwierdzenie około 30 s po płatności BLIK.</p>
                     </div>
 
+                    <p class="text-sm text-green-100 mt-4 max-w-sm" data-i18n="cyc_booking">Wkrótce dodam też opisy moich rowerowych doświadczeń i sklep z akcesoriami, które osobiście sprawdziłem.</p>
+
                     <a href="https://cargo.mleczki.pl" target="_blank" rel="noopener" class="action-link bg-green-500 hover:bg-green-400 text-white mt-6 shadow-[0_0_15px_rgba(34,197,94,0.4)]">
-                        <span data-i18n="cyc_link">Odwiedź cargo.mleczki.pl</span> &rarr;
+                        <span data-i18n="cyc_link">Odwiedź moją stronę rowerową</span> &rarr;
                     </a>
                 </div>
             </div>
@@ -559,19 +586,15 @@
                 </div>
                 
                 <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="com_title">Społecznik</h2>
-                <p class="text-orange-200 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="com_subtitle">Żeby sprawy mieszkańców nie krążyły między urzędami.</p>
+                <p class="text-orange-200 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="com_subtitle">Działam na rzecz mieszkańców Radzymina.</p>
                 
                 <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
-                    <p class="text-white text-sm md:text-base mb-4 max-w-md" data-i18n="com_desc">Ciężarówki w centrum mimo zakazu, niebezpieczne miejsca dla pieszych i rowerzystów, odpowiedzi odsyłające do kolejnego urzędu. Piszę wnioski i petycje, pytam o konkretne liczby i publicznie pokazuję każdy etap sprawy.</p>
+                    <p class="text-white text-sm md:text-base mb-4 max-w-md" data-i18n="com_desc">Zajmuję się bezpieczeństwem pieszych i rowerzystów, transportem publicznym oraz ruchem ciężarówek w mieście. Składam wnioski i petycje, pytam urzędy o ich działania i śledzę odpowiedzi.</p>
                     
-                    <div class="w-full max-w-md bg-orange-900/50 p-3 rounded-xl border border-white/20 mb-2 flex items-center gap-3 text-left">
-                        <span class="text-3xl font-extrabold text-white">136</span>
-                        <span class="text-xs text-orange-50" data-i18n="com_metric">naruszeń strefy ograniczenia tonażu w centrum Radzymina w lutym 2026. Dane z odpowiedzi Burmistrza na mój wniosek.</span>
-                    </div>
-                    <p class="text-sm font-medium text-orange-50 italic max-w-md" data-i18n="com_assoc">Planuję powołać stowarzyszenie. Masz sprawę albo chcesz pomóc? Napisz do mnie.</p>
+                    <p class="text-sm text-orange-50 max-w-md" data-i18n="com_more">Na radzymin.mleczki.pl publikuję pisma, odpowiedzi urzędów i informacje o postępach poszczególnych spraw.</p>
 
                     <a href="https://radzymin.mleczki.pl" target="_blank" rel="noopener" class="action-link bg-orange-700 hover:bg-orange-800 text-white border border-orange-500">
-                        <span data-i18n="com_link">Zobacz sprawy mieszkańców</span> &rarr;
+                        <span data-i18n="com_link">Poznaj moje działania w Radzyminie</span> &rarr;
                     </a>
                 </div>
             </div>
@@ -656,36 +679,33 @@
         
         const translations = {
             pl: {
-                meta_title: "Michał Mleczko — oprogramowanie i AI, rowery cargo, sprawy Radzymina",
-                meta_description: "Zastępuję ręczne procesy oprogramowaniem i agentami AI, wynajmuję rowery cargo na rodzinne wyprawy i pilnuję spraw mieszkańców Radzymina.",
-
-                dev_title: "Deweloper",
-                dev_subtitle: "Zastępuję ręczne procesy oprogramowaniem i agentami AI.",
-                dev_desc: "Przepisywanie danych, potwierdzanie wpłat, odpowiadanie na te same pytania — za tę pracę płacisz co miesiąc. Zamieniam ją w system, który wykonuje ją za Twój zespół.",
-                dev_ss_tag: "Darmowe demo bez rejestracji",
-                dev_ss_desc: "Projekty i zgłoszenia rozproszone w arkuszach i mailach? Tu są w jednym miejscu, a stan prac znasz bez dopytywania zespołu.",
-                dev_pq_tag: "Android · open source",
-                dev_pq_desc: "Telefon z muzyką krąży po imprezie? Goście dodają piosenki ze swoich urządzeń, bez kont i instalacji, a Ty decydujesz, co zagra.",
-                dev_classcash: "Składki klasowe bez kolejnego arkusza.",
-                dev_kiddo: "Zapisy i płatności za zajęcia bez telefonów.",
-                dev_github: "Zobacz efekty wdrożeń",
-
+                meta_title: "Michał Mleczko — programista, rowerzysta, społecznik",
+                meta_description: "Osobista strona Michała Mleczki. Projekty programistyczne, rowery cargo i działania społeczne w Radzyminie — poznaj mnie i moje inicjatywy.",
+                site_intro: "Moje projekty programistyczne, rowerowe pasje i działania na rzecz Radzymina. Tutaj znajdziesz odnośniki do każdego z tych obszarów.",
+                dev_title: "Programista",
+                dev_subtitle: "Tworzę aplikacje internetowe i rozwiązania z AI.",
+                dev_desc: "Projektuję i rozwijam oprogramowanie: od narzędzi do pracy zespołowej po aplikacje do zapisów i płatności. Poniżej znajdziesz kilka moich projektów, a na stronie zawodowej — więcej realizacji i informacje o współpracy.",
+                dev_ss_tag: "Zarządzanie pracą zespołu",
+                dev_ss_desc: "Aplikacja do prowadzenia projektów, planowania zadań, obsługi zgłoszeń i ewidencji czasu pracy.",
+                dev_pq_tag: "Muzyka na imprezę · Android",
+                dev_pq_desc: "Wspólna kolejka muzyczna na imprezę. Goście dodają utwory ze swoich telefonów, a gospodarz zarządza odtwarzaniem.",
+                dev_classcash: "Aplikacja do rozliczania składek klasowych.",
+                dev_kiddo: "Aplikacja do zapisów na zajęcia dla dzieci.",
+                dev_github: "Projekty i współpraca",
                 cyc_title: "Rowerzysta",
-                cyc_subtitle: "Rodzinna wyprawa bez auta i bez kupowania drogiego sprzętu.",
-                cyc_desc: "Rower cargo to duży wydatek, a z dziećmi i bagażem zwykły rower nie wystarcza. W Radzyminie wynajmiesz sprzęt na dobę, sprawdzisz go na własnej trasie i ocenisz, czy Ci pasuje.",
-                cyc_offer: "Wynajem już od 30 zł za dobę:",
-                cyc_cargo: "Elektryczny longjohn: do 4 dzieci w skrzyni",
-                cyc_tandem: "Tandem: jedziecie razem, nawet przy różnej kondycji",
-                cyc_trailers: "Przyczepki: dla 2 dzieci, z pedałami i towarowa",
-                cyc_booking: "Rezerwacja bez telefonu: potwierdzenie około 30 s po płatności BLIK.",
-                cyc_link: "Odwiedź cargo.mleczki.pl",
-
+                cyc_subtitle: "Rower cargo na co dzień i na rodzinne wyprawy.",
+                cyc_desc: "Na co dzień jeżdżę rowerem cargo. Swoją rowerową pasję rozwijam na cargo.mleczki.pl — dziś możesz tam wypożyczyć sprzęt i wypróbować go na własnej trasie.",
+                cyc_offer: "Wypożyczalnia w Radzyminie:",
+                cyc_cargo: "Elektryczny rower cargo",
+                cyc_tandem: "Tandem dla dwóch osób",
+                cyc_trailers: "Przyczepki dla dzieci i do przewozu bagażu",
+                cyc_booking: "Wkrótce dodam też opisy moich rowerowych doświadczeń i sklep z akcesoriami, które osobiście sprawdziłem.",
+                cyc_link: "Odwiedź moją stronę rowerową",
                 com_title: "Społecznik",
-                com_subtitle: "Żeby sprawy mieszkańców nie krążyły między urzędami.",
-                com_desc: "Ciężarówki w centrum mimo zakazu, niebezpieczne miejsca dla pieszych i rowerzystów, odpowiedzi odsyłające do kolejnego urzędu. Piszę wnioski i petycje, pytam o konkretne liczby i publicznie pokazuję każdy etap sprawy.",
-                com_metric: "naruszeń strefy ograniczenia tonażu w centrum Radzymina w lutym 2026. Dane z odpowiedzi Burmistrza na mój wniosek.",
-                com_assoc: "Planuję powołać stowarzyszenie. Masz sprawę albo chcesz pomóc? Napisz do mnie.",
-                com_link: "Zobacz sprawy mieszkańców",
+                com_subtitle: "Działam na rzecz mieszkańców Radzymina.",
+                com_desc: "Zajmuję się bezpieczeństwem pieszych i rowerzystów, transportem publicznym oraz ruchem ciężarówek w mieście. Składam wnioski i petycje, pytam urzędy o ich działania i śledzę odpowiedzi.",
+                com_more: "Na radzymin.mleczki.pl publikuję pisma, odpowiedzi urzędów i informacje o postępach poszczególnych spraw.",
+                com_link: "Poznaj moje działania w Radzyminie",
 
                 scene_caption: "POMYSŁ → DZIAŁAJĄCY SYSTEM",
                 scene_node_data: "Twoje dane",
@@ -709,36 +729,33 @@
                 scene_stamp: "WPŁYNĘŁO",
             },
             en: {
-                meta_title: "Michał Mleczko — software and AI, cargo bikes, Radzymin affairs",
-                meta_description: "I replace manual processes with software and AI agents, rent out cargo bikes for family trips and follow up on residents' issues in Radzymin.",
-
+                meta_title: "Michał Mleczko — developer, cyclist, community activist",
+                meta_description: "Michał Mleczko’s personal website. Software projects, cargo bikes and community work in Radzymin — get to know me and what I do.",
+                site_intro: "My software projects, cycling interests and community work in Radzymin. You’ll find links to each of these here.",
                 dev_title: "Developer",
-                dev_subtitle: "I replace manual processes with software and AI agents.",
-                dev_desc: "Retyping data, confirming payments, answering the same questions: you pay for that work every month. I turn it into a system that does it for your team.",
-                dev_ss_tag: "Free demo, no sign-up",
-                dev_ss_desc: "Projects and tickets scattered across spreadsheets and email? Here they live in one place, and you know the status without asking around.",
-                dev_pq_tag: "Android · open source",
-                dev_pq_desc: "Is the music phone being passed around the party? Guests add songs from their own devices, no accounts or installs, and you decide what plays.",
-                dev_classcash: "Class fees without yet another spreadsheet.",
-                dev_kiddo: "Class sign-ups and payments without phone calls.",
-                dev_github: "See the results",
-
+                dev_subtitle: "I build web applications and AI tools.",
+                dev_desc: "I design and develop software, from tools for teamwork to booking and payment applications. Explore a few of my projects below, or visit my professional website for more examples and ways to work together.",
+                dev_ss_tag: "Teamwork and project management",
+                dev_ss_desc: "An application for managing projects, planning tasks, handling tickets and tracking time.",
+                dev_pq_tag: "Party music · Android",
+                dev_pq_desc: "A shared music queue for parties. Guests add songs from their own phones, while the host manages playback.",
+                dev_classcash: "An app for managing school class funds.",
+                dev_kiddo: "An app for booking children’s activities.",
+                dev_github: "Projects and working together",
                 cyc_title: "Cyclist",
-                cyc_subtitle: "A family trip without a car or an expensive purchase.",
-                cyc_desc: "A cargo bike is a big expense, and a regular bike won't carry kids and luggage. In Radzymin you can rent the gear by the day, try it on your own route and see if it suits you.",
-                cyc_offer: "Rentals from 30 PLN a day:",
-                cyc_cargo: "Electric longjohn: up to 4 kids in the box",
-                cyc_tandem: "Tandem: ride together, even at different fitness levels",
-                cyc_trailers: "Trailers: for 2 kids, pedal-powered and cargo",
-                cyc_booking: "Book without a phone call: confirmed about 30 s after your BLIK payment.",
-                cyc_link: "Visit cargo.mleczki.pl",
-
+                cyc_subtitle: "Cargo cycling for everyday journeys and family trips.",
+                cyc_desc: "I ride a cargo bike every day. My cycling website, cargo.mleczki.pl, is growing out of that interest. You can already rent equipment there and try it on your own route.",
+                cyc_offer: "Available to rent in Radzymin:",
+                cyc_cargo: "An electric cargo bike",
+                cyc_tandem: "A tandem for two riders",
+                cyc_trailers: "Trailers for children and luggage",
+                cyc_booking: "I’ll soon add accounts of my cycling experiences and a shop with accessories I have personally tested.",
+                cyc_link: "Visit my cycling website",
                 com_title: "Activist",
-                com_subtitle: "So residents' issues don't just circle between offices.",
-                com_desc: "Trucks in the town centre despite the ban, dangerous spots for pedestrians and cyclists, replies that point you to yet another office. I file requests and petitions, ask for specific numbers and publish every stage of each case.",
-                com_metric: "violations of the weight-limit zone in central Radzymin in February 2026. Figures from the Mayor's reply to my request.",
-                com_assoc: "I plan to found an association. Got an issue or want to help? Get in touch.",
-                com_link: "See residents' cases",
+                com_subtitle: "Working for the community in Radzymin.",
+                com_desc: "I work on pedestrian and cyclist safety, public transport and truck traffic in town. I submit requests and petitions, ask local authorities about their actions and follow up on their replies.",
+                com_more: "At radzymin.mleczki.pl I publish correspondence with local authorities and updates on individual cases.",
+                com_link: "Explore my work in Radzymin",
 
                 scene_caption: "IDEA → WORKING SYSTEM",
                 scene_node_data: "Your data",
