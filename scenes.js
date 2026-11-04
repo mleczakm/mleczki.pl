@@ -12,15 +12,30 @@
     const lerp = (a, b, t) => a + (b - a) * t;
     const smooth = (t) => { const x = clamp(t); return x * x * (3 - 2 * x); };
     const mod = (v, m) => ((v % m) + m) % m;
-    const hash = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+    // Ziarna drzew, chmur i opadów są stałe. Wyniki zachowują pełną precyzję,
+    // a ograniczona tablica nie rośnie podczas długiej jazdy.
+    const hashes = new Float64Array(2048);
+    const knownHashes = new Uint8Array(hashes.length);
+    const hash = (n) => {
+        const reusable = Number.isInteger(n) && n >= 0 && n < hashes.length;
+        if (reusable && knownHashes[n]) return hashes[n];
+        const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+        const value = x - Math.floor(x);
+        if (reusable) { hashes[n] = value; knownHashes[n] = 1; }
+        return value;
+    };
     const label = (key) => {
         const lang = document.documentElement.lang;
         return (translations[lang] && translations[lang][key]) || translations.pl[key] || '';
     };
 
+    const colors = new Map();
     const rgb = (hex) => {
+        if (colors.has(hex)) return colors.get(hex);
         const n = parseInt(hex.slice(1), 16);
-        return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+        const value = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+        colors.set(hex, value);
+        return value;
     };
     const mixRgb = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
     const css = (c, alpha = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${alpha})`;
@@ -68,6 +83,51 @@
         c.stroke();
     };
     const setFont = (c, weight, size, family = SANS) => { c.font = `${weight} ${size}px ${family}`; };
+
+    let textWidths = new WeakMap();
+    const textWidth = (c, text) => {
+        let widths = textWidths.get(c);
+        if (!widths) { widths = new Map(); textWidths.set(c, widths); }
+        const key = `${c.font}|${c.letterSpacing || '0px'}|${text}`;
+        if (widths.has(key)) return widths.get(key);
+        const width = c.measureText(text).width;
+        if (widths.size >= 128) widths.clear();
+        widths.set(key, width);
+        return width;
+    };
+    // Po wczytaniu fontu pomiar wykonany na foncie zastępczym jest już nieaktualny.
+    if (document.fonts) document.fonts.addEventListener('loadingdone', () => { textWidths = new WeakMap(); });
+
+    // Niezmienne tło powstaje raz, w dokładnie tej samej rozdzielczości co scena.
+    // Kopia 1:1 nie rozmywa detali i nie zmienia gęstości pikseli ani płynności.
+    function createBackdrop() {
+        let cachedView = null, bitmap = null, scaleX = 0, scaleY = 0;
+        const draw = (c, view, paint) => {
+            const transform = c.getTransform();
+            if (cachedView !== view || !bitmap || bitmap.width !== c.canvas.width || bitmap.height !== c.canvas.height
+                || scaleX !== transform.a || scaleY !== transform.d) {
+                bitmap = document.createElement('canvas');
+                bitmap.width = c.canvas.width;
+                bitmap.height = c.canvas.height;
+                const background = bitmap.getContext('2d', { alpha: false });
+                background.setTransform(transform);
+                paint(background);
+                cachedView = view;
+                scaleX = transform.a;
+                scaleY = transform.d;
+            }
+            c.save();
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.drawImage(bitmap, 0, 0);
+            c.restore();
+        };
+        draw.release = () => {
+            if (bitmap) { bitmap.width = 1; bitmap.height = 1; }
+            bitmap = null;
+            cachedView = null;
+        };
+        return draw;
+    }
     // Chmura jako jedna ścieżka, aby półprzezroczyste kręgi nie prześwitywały przez siebie
     const puff = (c, x, y, size, seed) => {
         c.beginPath();
@@ -103,10 +163,13 @@
         let clock = 0, elapsed = 0, scenario = 0, routeIndex = -1;
         const heat = { hub: 0, data: 0, tools: 0, agent: 0, result: 0 };
         let ripples = [];
+        const layouts = new WeakMap();
+        const backdrop = createBackdrop();
 
         const reveal = (from, to) => smooth((elapsed - from) / 0.28) * (1 - smooth((elapsed - to) / 0.28));
 
         function layout(view) {
+            if (layouts.has(view)) return layouts.get(view);
             const hy = view.h * 0.885;
             const left = Math.max(view.left(hy), 0);
             const right = view.right(hy);
@@ -121,7 +184,9 @@
                     hy + (node.far ? -26 : 30),
                 ];
             });
-            return { hx, hy, left, right, width, compact, points };
+            const result = { hx, hy, left, right, width, compact, points };
+            layouts.set(view, result);
+            return result;
         }
 
         function beamPath(points, from, to) {
@@ -134,7 +199,7 @@
             const glow = heat[name];
             setFont(c, 600, 11);
             const text = label(node.key);
-            const w = compact ? 38 : c.measureText(text).width + 50;
+            const w = compact ? 38 : textWidth(c, text) + 50;
             const h = 38;
             const x = point[0] - w / 2, y = point[1] - h / 2;
             c.save();
@@ -195,9 +260,9 @@
             c.save();
             c.globalAlpha = alpha;
             setFont(c, strong ? 700 : 500, fontSize, mono ? MONO : SANS);
-            const textW = c.measureText(text).width;
+            const textW = textWidth(c, text);
             setFont(c, 800, fontSize + 4.5);
-            const metricW = metric ? c.measureText(metric).width + 12 : 0;
+            const metricW = metric ? textWidth(c, metric) + 12 : 0;
             const w = textW + metricW + 26, h = view.mobile ? 38 : 30;
             const y = point[1] - (view.mobile ? 70 : 62) - (1 - alpha) * -8;
             const x = clamp(point[0] - w / 2, Math.max(view.left(y), 0) + 8, view.right(y) - w - 8);
@@ -221,6 +286,7 @@
         }
 
         return {
+            release() { backdrop.release(); },
             enter() {
                 elapsed = 0;
                 routeIndex = -1;
@@ -252,13 +318,15 @@
                 const { hx, hy, compact, points, right } = layout(view);
                 const item = SCENARIOS[scenario];
 
-                c.fillStyle = '#0f172a';
-                c.fillRect(0, 0, view.w, view.h);
-                const haze = c.createRadialGradient(hx, hy, 10, hx, hy, view.h * 0.8);
-                haze.addColorStop(0, 'rgba(37,99,235,.28)');
-                haze.addColorStop(1, 'rgba(37,99,235,0)');
-                c.fillStyle = haze;
-                c.fillRect(0, 0, view.w, view.h);
+                backdrop(c, view, (background) => {
+                    background.fillStyle = '#0f172a';
+                    background.fillRect(0, 0, view.w, view.h);
+                    const haze = background.createRadialGradient(hx, hy, 10, hx, hy, view.h * 0.8);
+                    haze.addColorStop(0, 'rgba(37,99,235,.28)');
+                    haze.addColorStop(1, 'rgba(37,99,235,0)');
+                    background.fillStyle = haze;
+                    background.fillRect(0, 0, view.w, view.h);
+                });
 
                 // Orbity jak w sekcji hero
                 const radii = [view.h * 0.3, view.h * 0.47, view.h * 0.66, view.h * 0.86];
@@ -331,7 +399,7 @@
                 setFont(c, 700, 10);
                 if ('letterSpacing' in c) c.letterSpacing = '2px';
                 const titleX = (view.textL + view.textR) / 2;
-                const titleW = c.measureText(label('scene_caption')).width;
+                const titleW = textWidth(c, label('scene_caption'));
                 // Na wąskim ekranie podpis schodzi poniżej znaku marki w lewym górnym rogu
                 const clearsBrand = titleX - titleW / 2 + view.screenX > 200 / view.scale;
                 const top = clearsBrand ? view.h * 0.052 : 80 / view.scale;
@@ -814,7 +882,7 @@
 
         function drawSign(c, x, base, text, pal) {
             setFont(c, 800, 12);
-            const w = c.measureText(text).width + 18;
+            const w = textWidth(c, text) + 18;
             c.strokeStyle = css(mixRgb(pal.road, pal.stone, 0.3));
             c.lineWidth = 3;
             line(c, x, base, x, base - 46);
@@ -1276,8 +1344,11 @@
         let clock = 0, spawnClock = 0, sent = 0;
         let sheets = [];
         const pulses = BUILDINGS.map(() => ({ flash: 0, stamp: 0 }));
+        const layouts = new WeakMap();
+        const backdrop = createBackdrop();
 
         function layout(view) {
+            if (layouts.has(view)) return layouts.get(view);
             const ground = view.h * 0.905;
             const left = Math.max(view.left(ground), 0);
             const right = view.right(ground);
@@ -1294,7 +1365,9 @@
             const placed = BUILDINGS.slice(0, count).map((b, i) => ({
                 ...b, index: i, scale, x: start + gap * (i + 0.5),
             }));
-            return { ground, left, right, deskX, deskW, deskTop, slot, placed };
+            const result = { ground, left, right, deskX, deskW, deskTop, slot, placed };
+            layouts.set(view, result);
+            return result;
         }
 
         function drawBuilding(c, b, ground) {
@@ -1414,7 +1487,7 @@
             // Szyld z nazwą instytucji
             setFont(c, 800, 9);
             const name = label(b.key);
-            const nameW = c.measureText(name).width + 12;
+            const nameW = textWidth(c, name) + 12;
             const signY = b.type === 'city' ? -h + 5 : -h + 9;
             c.fillStyle = 'rgba(255,247,237,.95)';
             roundedRect(c, -nameW / 2, signY, nameW, 15, 3);
@@ -1435,7 +1508,7 @@
                 c.globalAlpha = smooth(pulse.stamp / 0.25);
                 setFont(c, 800, 11);
                 const text = label('scene_stamp');
-                const stampW = c.measureText(text).width + 12;
+                const stampW = textWidth(c, text) + 12;
                 c.fillStyle = 'rgba(254,243,199,.97)';
                 roundedRect(c, -stampW / 2, -10, stampW, 20, 3);
                 c.fill();
@@ -1617,6 +1690,7 @@
         }
 
         return {
+            release() { backdrop.release(); },
             enter() {
                 sheets = [];
                 spawnClock = SPAWN_EVERY - 0.25;
@@ -1661,22 +1735,24 @@
             },
             draw(c, view) {
                 const l = layout(view);
-                const sky = c.createLinearGradient(0, 0, 0, l.ground);
-                sky.addColorStop(0, '#c2620a');
-                sky.addColorStop(0.7, '#e08a14');
-                sky.addColorStop(1, '#f2b23a');
-                c.fillStyle = sky;
-                c.fillRect(0, 0, view.w, view.h);
-
-                // Słońce, chmury i dalekie miasto
                 const sunX = Math.max(view.left(view.h * 0.3), 0) + 120;
-                const halo = c.createRadialGradient(sunX, view.h * 0.24, 10, sunX, view.h * 0.24, 190);
-                halo.addColorStop(0, 'rgba(254,243,199,.55)');
-                halo.addColorStop(1, 'rgba(254,243,199,0)');
-                c.fillStyle = halo;
-                c.fillRect(sunX - 190, view.h * 0.24 - 190, 380, 380);
-                c.fillStyle = view.mobile ? 'rgba(254,243,199,.2)' : 'rgba(254,243,199,.8)';
-                disc(c, sunX, view.h * 0.24, 36);
+                backdrop(c, view, (background) => {
+                    const sky = background.createLinearGradient(0, 0, 0, l.ground);
+                    sky.addColorStop(0, '#c2620a');
+                    sky.addColorStop(0.7, '#e08a14');
+                    sky.addColorStop(1, '#f2b23a');
+                    background.fillStyle = sky;
+                    background.fillRect(0, 0, view.w, view.h);
+                    const halo = background.createRadialGradient(sunX, view.h * 0.24, 10, sunX, view.h * 0.24, 190);
+                    halo.addColorStop(0, 'rgba(254,243,199,.55)');
+                    halo.addColorStop(1, 'rgba(254,243,199,0)');
+                    background.fillStyle = halo;
+                    background.fillRect(sunX - 190, view.h * 0.24 - 190, 380, 380);
+                    background.fillStyle = view.mobile ? 'rgba(254,243,199,.2)' : 'rgba(254,243,199,.8)';
+                    disc(background, sunX, view.h * 0.24, 36);
+                });
+
+                // Chmury pozostają w ruchu, przed niezmiennym tłem i za miastem.
                 for (let i = 0; i < 6; i++) {
                     const span = view.w + 300;
                     const x = mod(hash(i + 7) * span + clock * (4 + hash(i) * 7), span) - 150;
@@ -1764,20 +1840,29 @@
 
     const stages = [...document.querySelectorAll('.panel')].map((panel, index) => {
         const canvas = panel.querySelector('.panel-scene');
-        return { panel, canvas, index, ctx: canvas.getContext('2d'), scene: factories[index](), active: false, stopAt: 0, view: null, dpr: 1 };
+        return {
+            panel, canvas, index, ctx: canvas.getContext('2d', { alpha: false }), scene: factories[index](),
+            active: false, visible: false, stopAt: 0, view: null, dpr: 1, cssW: 0, cssH: 0, viewportW: 0,
+            posterPending: false,
+        };
     });
 
     function measure(stage) {
         const { canvas, index } = stage;
         const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
-        if (!cssW || !cssH) return;
-        stage.dpr = Math.min(window.devicePixelRatio || 1, 2);
+        if (!cssW || !cssH) return false;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const vw = window.innerWidth;
+        if (stage.view && stage.cssW === cssW && stage.cssH === cssH && stage.viewportW === vw && stage.dpr === dpr) return false;
+        stage.dpr = dpr;
+        stage.cssW = cssW;
+        stage.cssH = cssH;
+        stage.viewportW = vw;
         // Ustawienie rozmiaru czyści płótno, więc robimy to tylko przy realnej zmianie
         const backingW = Math.round(cssW * stage.dpr), backingH = Math.round(cssH * stage.dpr);
         if (canvas.width !== backingW) canvas.width = backingW;
         if (canvas.height !== backingH) canvas.height = backingH;
 
-        const vw = window.innerWidth;
         const mobile = vw < 768;
         const scale = mobile ? clamp(cssW / 620, 0.55, 0.85) : clamp(cssH / 900, 0.72, 1.5);
         const w = cssW / scale, h = cssH / scale;
@@ -1797,6 +1882,7 @@
                 textL: (cssW - textW) / 2 / scale,
                 textR: (cssW + textW) / 2 / scale,
             };
+        return true;
     }
 
     function render(stage) {
@@ -1815,16 +1901,26 @@
         if (stage.scene.prepare) stage.scene.prepare();
         for (let i = 0; i < 60 * 9; i++) stage.scene.update(1 / 60, stage.view);
         render(stage);
+        stage.posterPending = false;
     }
 
     let rafId = null, lastFrame = 0;
 
     function loop(now) {
+        rafId = null;
+        if (document.hidden || reducedMotion.matches) return;
         const dt = Math.min((now - lastFrame) / 1000, 0.05);
         lastFrame = now;
         let live = false;
         stages.forEach((stage) => {
-            if (!stage.active && now > stage.stopAt) return;
+            if (!stage.active && now > stage.stopAt) {
+                if (stage.stopAt) {
+                    if (stage.scene.release) stage.scene.release();
+                    stage.stopAt = 0;
+                }
+                return;
+            }
+            if (!stage.visible) return;
             live = true;
             if (!stage.view) measure(stage);
             if (!stage.view) return;
@@ -1834,20 +1930,31 @@
         rafId = live ? requestAnimationFrame(loop) : null;
     }
 
+    function startLoop() {
+        if (rafId !== null || document.hidden || reducedMotion.matches) return;
+        if (!stages.some((stage) => stage.visible && (stage.active || performance.now() < stage.stopAt))) return;
+        lastFrame = performance.now();
+        rafId = requestAnimationFrame(loop);
+    }
+
+    function stopLoop() {
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        rafId = null;
+    }
+
     function syncStage(stage) {
         const active = stage.panel.classList.contains('active');
         if (active === stage.active) return;
         stage.active = active;
         if (reducedMotion.matches) {
-            if (active) renderPoster(stage);
+            stage.posterPending = active;
+            if (active && stage.visible && !document.hidden) renderPoster(stage);
+            if (!active && stage.scene.release) stage.scene.release();
             return;
         }
         if (active) stage.scene.enter();
         else stage.stopAt = performance.now() + FADE_MS;
-        if (rafId === null) {
-            lastFrame = performance.now();
-            rafId = requestAnimationFrame(loop);
-        }
+        startLoop();
     }
 
     const observer = new MutationObserver(() => stages.forEach(syncStage));
@@ -1856,18 +1963,54 @@
         syncStage(stage);
     });
 
+    // Focus może pozostać na panelu, który już opuścił ekran (np. po przewinięciu
+    // do wstępu). Nie rysujemy niewidocznego płótna ani karty ukrytej w tle.
+    const visibilityObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            const stage = stages.find((item) => item.panel === entry.target);
+            stage.visible = entry.isIntersecting;
+            if (stage.visible && stage.active && reducedMotion.matches && !document.hidden) {
+                if (stage.posterPending) renderPoster(stage);
+                else render(stage);
+            }
+        });
+        startLoop();
+    });
+    stages.forEach((stage) => visibilityObserver.observe(stage.panel));
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) stopLoop();
+        else if (reducedMotion.matches) {
+            stages.forEach((stage) => {
+                if (stage.active && stage.visible) {
+                    if (stage.posterPending) renderPoster(stage);
+                    else render(stage);
+                }
+            });
+        } else startLoop();
+    });
+
+    reducedMotion.addEventListener('change', () => {
+        stopLoop();
+        stages.forEach((stage) => {
+            stage.stopAt = 0;
+            stage.posterPending = stage.active && reducedMotion.matches;
+            if (stage.posterPending && stage.visible && !document.hidden) renderPoster(stage);
+            if (!stage.active && stage.scene.release) stage.scene.release();
+        });
+        startLoop();
+    });
+
     // Podpisy na płótnie muszą nadążać za językiem także wtedy, gdy nic się nie animuje
     new MutationObserver(() => {
-        if (reducedMotion.matches) stages.forEach((stage) => { if (stage.active) render(stage); });
+        if (reducedMotion.matches && !document.hidden) stages.forEach((stage) => { if (stage.active && stage.visible) render(stage); });
     }).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
 
     function remeasure() {
         stages.forEach((stage) => {
-            stage.view = null;
-            if (stage.active) {
-                measure(stage);
-                render(stage);
-            }
+            if (stage.active || performance.now() < stage.stopAt) {
+                if (measure(stage) && stage.visible && !document.hidden) render(stage);
+            } else stage.view = null;
         });
     }
 
