@@ -39,7 +39,7 @@
         "@type": "Person",
         "name": "Michał Mleczko",
         "url": "https://mleczki.pl/",
-        "image": "https://mleczki.pl/og-image.png",
+        "image": "https://mleczki.pl/michal.webp",
         "jobTitle": "Software Architect, AI Engineer",
         "description": "Osobista strona Michała Mleczki. Projekty programistyczne, rowery cargo i działania społeczne w Radzyminie — poznaj mnie i moje inicjatywy.",
         "homeLocation": { "@type": "Place", "name": "Radzymin, Polska" },
@@ -106,12 +106,83 @@
             scroll-snap-align: start;
         }
 
-        .site-intro > p {
-            max-width: 48rem;
+        /* Wizytówka: zdjęcie, powitanie i krótki opis strony */
+        .intro-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            max-width: 46rem;
             margin: 0 auto;
+            text-align: left;
+        }
+
+        .intro-photo {
+            flex: none;
+            position: relative;
+            width: 5rem;
+            height: 5rem;
+        }
+
+        .intro-photo img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            background: #e2e8f0;
+        }
+
+        /* Żółta kropka ze znaku marki */
+        .intro-photo::after {
+            content: '';
+            position: absolute;
+            right: 0.1rem;
+            bottom: 0.1rem;
+            width: 0.85rem;
+            height: 0.85rem;
+            border-radius: 50%;
+            background: #fde047;
+            border: 3px solid #0f172a;
+        }
+
+        .intro-hello {
+            color: #fff;
+            font-size: 1.375rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.25;
+        }
+
+        .intro-lead {
+            margin-top: 0.2rem;
             color: #cbd5e1;
-            font-size: 0.95rem;
-            line-height: 1.6;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        /* Na szerokim ekranie wizytówka mieści się między znakiem marki a przełącznikiem języka */
+        @media (min-width: 1100px) {
+            .site-intro {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+
+            .intro-card {
+                max-width: min(46rem, calc(100vw - 27rem));
+            }
+        }
+
+        a:focus-visible,
+        button:focus-visible {
+            outline: 3px solid #fde047;
+            outline-offset: 3px;
+        }
+
+        /* Biały tekst na bursztynowym tle potrzebuje cienia, by pozostał czytelny */
+        .bg-activistAmber .panel-content h2,
+        .bg-activistAmber .panel-content p {
+            text-shadow: 0 1px 3px rgba(124, 45, 18, 0.6);
         }
 
         /* Kontener główny */
@@ -333,6 +404,17 @@
                 border-bottom: 4px solid rgba(0,0,0,0.3);
             }
 
+            .intro-card {
+                flex-direction: column;
+                gap: 0.75rem;
+                text-align: center;
+            }
+
+            .intro-photo {
+                width: 5.5rem;
+                height: 5.5rem;
+            }
+
             body .brand-bar {
                 top: 0.5rem;
                 left: 0.5rem;
@@ -456,7 +538,15 @@
             </svg>
             <h1 class="text-sm font-semibold tracking-tight text-white">Michał Mleczko</h1>
         </a>
-        <p data-i18n="site_intro">Moje projekty programistyczne, rowerowe pasje i działania na rzecz Radzymina. Tutaj znajdziesz odnośniki do każdego z tych obszarów.</p>
+        <div class="intro-card">
+            <div class="intro-photo">
+                <img src="/michal.webp" width="400" height="400" alt="Michał Mleczko">
+            </div>
+            <div>
+                <p class="intro-hello" data-i18n="site_hello">Cześć, jestem Michał.</p>
+                <p class="intro-lead" data-i18n="site_intro">Moje projekty programistyczne, rowerowe pasje i działania na rzecz Radzymina. Tutaj znajdziesz odnośniki do każdego z tych obszarów.</p>
+            </div>
+        </div>
     </header>
 
     <svg width="0" height="0" class="absolute" aria-hidden="true">
@@ -501,25 +591,25 @@
                     <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-3">
                         <a href="https://sprintspaces.github.io/" target="_blank" rel="noopener" class="featured-card">
                             <span class="font-bold text-white flex items-center justify-between">SprintSpaces <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_ss_tag">Zarządzanie pracą zespołu</span>
-                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_ss_desc">Aplikacja do prowadzenia projektów, planowania zadań, obsługi zgłoszeń i ewidencji czasu pracy.</span>
+                            <span class="block text-xs font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_ss_tag">Zarządzanie pracą zespołu</span>
+                            <span class="block text-[13px] leading-snug text-gray-200 mt-1.5" data-i18n="dev_ss_desc">Aplikacja do prowadzenia projektów, planowania zadań, obsługi zgłoszeń i ewidencji czasu pracy.</span>
                         </a>
 
                         <a href="https://party-queue.github.io/" target="_blank" rel="noopener" class="featured-card">
                             <span class="font-bold text-white flex items-center justify-between">Party Queue <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_pq_tag">Muzyka na imprezę · Android</span>
-                            <span class="block text-xs text-gray-200 mt-1.5" data-i18n="dev_pq_desc">Wspólna kolejka muzyczna na imprezę. Goście dodają utwory ze swoich telefonów, a gospodarz zarządza odtwarzaniem.</span>
+                            <span class="block text-xs font-semibold uppercase tracking-wide text-blue-300 mt-0.5" data-i18n="dev_pq_tag">Muzyka na imprezę · Android</span>
+                            <span class="block text-[13px] leading-snug text-gray-200 mt-1.5" data-i18n="dev_pq_desc">Wspólna kolejka muzyczna na imprezę. Goście dodają utwory ze swoich telefonów, a gospodarz zarządza odtwarzaniem.</span>
                         </a>
                     </div>
 
                     <div class="w-full flex flex-wrap gap-2 mt-2">
                         <a href="https://classy-cash.github.io/" target="_blank" rel="noopener" class="project-link">
-                            <span class="block text-xs font-bold text-white">Classy Cash <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] text-gray-400" data-i18n="dev_classcash">Aplikacja do rozliczania składek klasowych.</span>
+                            <span class="block text-[13px] font-bold text-white">Classy Cash <span aria-hidden="true">&#8599;</span></span>
+                            <span class="block text-xs text-gray-300" data-i18n="dev_classcash">Aplikacja do rozliczania składek klasowych.</span>
                         </a>
                         <a href="https://github.com/mleczakm/kiddo" target="_blank" rel="noopener" class="project-link">
-                            <span class="block text-xs font-bold text-white">Kiddo <span aria-hidden="true">&#8599;</span></span>
-                            <span class="block text-[11px] text-gray-400" data-i18n="dev_kiddo">Aplikacja do zapisów na zajęcia dla dzieci.</span>
+                            <span class="block text-[13px] font-bold text-white">Kiddo <span aria-hidden="true">&#8599;</span></span>
+                            <span class="block text-xs text-gray-300" data-i18n="dev_kiddo">Aplikacja do zapisów na zajęcia dla dzieci.</span>
                         </a>
                     </div>
 
@@ -586,7 +676,7 @@
                 </div>
                 
                 <h2 class="panel-title text-3xl md:text-5xl font-extrabold tracking-tight mb-2 uppercase" data-i18n="com_title">Społecznik</h2>
-                <p class="text-orange-200 font-medium tracking-wide mb-4 text-sm md:text-base" data-i18n="com_subtitle">Działam na rzecz mieszkańców Radzymina.</p>
+                <p class="text-orange-50 font-semibold tracking-wide mb-4 text-sm md:text-base" data-i18n="com_subtitle">Działam na rzecz mieszkańców Radzymina.</p>
                 
                 <div class="panel-details w-full text-left md:text-center flex flex-col items-center">
                     <p class="text-white text-sm md:text-base mb-4 max-w-md" data-i18n="com_desc">Zajmuję się bezpieczeństwem pieszych i rowerzystów, transportem publicznym oraz ruchem ciężarówek w mieście. Składam wnioski i petycje, pytam urzędy o ich działania i śledzę odpowiedzi.</p>
@@ -661,6 +751,9 @@
             }
         }
 
+        // Klawiatura: fokus na odnośniku w panelu rozwija ten panel
+        panels.forEach(panel => panel.addEventListener('focusin', () => activatePanel(panel)));
+
         stackedLayout.addEventListener('change', syncLayout);
         syncLayout();
 
@@ -681,6 +774,7 @@
             pl: {
                 meta_title: "Michał Mleczko — programista, rowerzysta, społecznik",
                 meta_description: "Osobista strona Michała Mleczki. Projekty programistyczne, rowery cargo i działania społeczne w Radzyminie — poznaj mnie i moje inicjatywy.",
+                site_hello: "Cześć, jestem Michał.",
                 site_intro: "Moje projekty programistyczne, rowerowe pasje i działania na rzecz Radzymina. Tutaj znajdziesz odnośniki do każdego z tych obszarów.",
                 dev_title: "Programista",
                 dev_subtitle: "Tworzę aplikacje internetowe i rozwiązania z AI.",
@@ -731,6 +825,7 @@
             en: {
                 meta_title: "Michał Mleczko — developer, cyclist, community activist",
                 meta_description: "Michał Mleczko’s personal website. Software projects, cargo bikes and community work in Radzymin — get to know me and what I do.",
+                site_hello: "Hi, I’m Michał.",
                 site_intro: "My software projects, cycling interests and community work in Radzymin. You’ll find links to each of these here.",
                 dev_title: "Developer",
                 dev_subtitle: "I build web applications and AI tools.",

@@ -2,7 +2,7 @@
 (() => {
     const SKEW_TAN = Math.tan(12 * Math.PI / 180);
     const FADE_MS = 700; // Musi być nie krótsze niż przejście opacity w .panel-scene
-    const SERIF = 'Georgia, "Times New Roman", serif';
+    const BRAND_M = new Path2D('M8 23v-9.5a3.75 3.75 0 0 1 7.5 0V23m0-9.5a3.75 3.75 0 0 1 7.5 0V23');
     const SANS = 'Inter, sans-serif';
     const MONO = 'ui-monospace, Menlo, Consolas, monospace';
 
@@ -241,13 +241,20 @@
             roundedRect(c, x, y, size, size, 14);
             c.fillStyle = fill;
             c.fill();
+            // Litera ze znaku marki (favicon.svg) w układzie 32 × 32
+            const glyph = 2.1;
+            c.save();
+            c.translate(hx - 17.4 * glyph, hy - 20.5 * glyph);
+            c.scale(glyph, glyph);
+            c.strokeStyle = '#ffffff';
+            c.lineWidth = 2.9;
+            c.lineCap = 'round';
+            c.stroke(BRAND_M);
+            c.fillStyle = '#fde047';
+            disc(c, 26.6, 22.4, 1.9 + Math.sin(clock * 3) * 0.25);
+            c.restore();
             c.textAlign = 'center';
             c.textBaseline = 'alphabetic';
-            setFont(c, 700, 44, SERIF);
-            c.fillStyle = '#ffffff';
-            c.fillText('m', hx - 5, hy + 6);
-            c.fillStyle = '#7dd3fc';
-            disc(c, hx + 21, hy + 1, 4.5 + Math.sin(clock * 3) * 0.6);
             setFont(c, 600, 7);
             c.fillStyle = 'rgba(191,219,254,.85)';
             c.fillText('AI × HUMAN', hx, hy + 29);
